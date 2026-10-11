@@ -4,6 +4,6 @@
 // La clave anon es pública por diseño: solo permite llamar a las funciones de servidor/liga.sql.
 // Si se deja vacío, el juego funciona igual pero sin ligas.
 export const LIGA = {
-  url: "",
-  clave: "",
+  url: "https://akrmwslhkrubvuihtner.supabase.co",
+  clave: "sb_publishable_pQZX6C7RZCobDUJOpnyXwg_iGwdSj-F",
 };

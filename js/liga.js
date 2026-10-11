@@ -43,10 +43,10 @@ export async function registrar(alias, modelo) {
   return guardar(e);
 }
 
-/** Estado de la liga; si el servidor no conoce a este jugador, lo da de alta. */
-export async function estadoLiga(alias, modelo) {
-  const e = await rpc("liga_estado", { p_secreto: secreto() });
-  return e ? guardar(e) : registrar(alias, modelo);
+/** Estado de la liga (null si este jugador aún no ha jugado ninguna misión: solo se da de alta al enviar una). */
+export async function estadoLiga() {
+  if (!almacen.leer("hp_liga_registrado", false)) return null;
+  return guardar(await rpc("liga_estado", { p_secreto: secreto() }));
 }
 
 /**
@@ -62,7 +62,7 @@ export async function enviarPartida({ fecha, puntos, alias, modelo }) {
 
 export async function reintentarPendientes(alias, modelo) {
   let cola = almacen.leer("hp_liga_pendientes", []);
-  if (!cola.length) return estadoLiga(alias, modelo);
+  if (!cola.length) return estadoLiga();
   if (!almacen.leer("hp_liga_registrado", false)) await registrar(alias, modelo);
   let ultimo = null;
   for (const p of cola) {
@@ -76,5 +76,5 @@ export async function reintentarPendientes(alias, modelo) {
     }
   }
   almacen.guardar("hp_liga_pendientes", cola);
-  return guardar(ultimo) || estadoLiga(alias, modelo);
+  return guardar(ultimo) || estadoLiga();
 }

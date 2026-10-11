@@ -2,7 +2,7 @@
 import { $, T, ruta, ir, pantalla, escapar, numero, planeta, cohete, aviso, COLORES_JUGADOR, montarSprites } from "../ui.js";
 import { estado, nombrePiloto, almacen } from "../estado.js";
 import { sonido } from "../sonido.js";
-import { ligaActiva, ligaGuardada, estadoLiga, registrar, reintentarPendientes } from "../liga.js";
+import { ligaActiva, ligaGuardada, registrar, reintentarPendientes } from "../liga.js";
 
 export const SPRITE_DIVISION = ["luna", "marte", "jupiter", "saturno", "sirio", "andromeda"];
 
@@ -89,7 +89,7 @@ ruta("liga", () => {
         ${e ? `<span class="chip oscuro">⏱ ${tiempoRestante(e)}</span>` : ""}
       </section>
       ${error ? `<p class="mensaje error" style="text-align:center">${t.sinConexionLiga}</p>` : ""}
-      ${e ? htmlClasificacion(e) : ""}
+      ${e ? htmlClasificacion(e) : `<section class="caja"><p class="subtitulo" style="margin:0">${t.entraLiga}</p></section>`}
       <p class="aviso-pie">${t.ligaInfo}</p>
       <section class="caja" style="display:grid;gap:10px">
         <label class="etiqueta" for="alias-liga">${t.tuAlias}</label>
