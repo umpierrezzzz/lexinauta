@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <radialGradient id="fondo" cx=".3" cy=".2" r="1">
+      <stop offset="0" stop-color="#2a2366"/>
+      <stop offset=".55" stop-color="#0b0f2a"/>
+      <stop offset="1" stop-color="#03050e"/>
+    </radialGradient>
+    <radialGradient id="pluton" cx=".38" cy=".33" r=".75">
+      <stop offset="0" stop-color="#fbeedb"/>
+      <stop offset=".45" stop-color="#c99f78"/>
+      <stop offset=".85" stop-color="#4a3424"/>
+      <stop offset="1" stop-color="#2a1d14"/>
+    </radialGradient>
+    <radialGradient id="halo" cx=".5" cy=".5" r=".5">
+      <stop offset=".6" stop-color="#f5d7a8" stop-opacity=".45"/>
+      <stop offset="1" stop-color="#f5d7a8" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="estela" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0" stop-color="#ff8a3d" stop-opacity="0"/>
+      <stop offset="1" stop-color="#ffb23d"/>
+    </linearGradient>
+    <linearGradient id="cuerpo" x1="0" x2="1"><stop offset="0" stop-color="#cfd8ef"/><stop offset=".5" stop-color="#fff"/><stop offset="1" stop-color="#9aa6c8"/></linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="url(#fondo)"/>
+  <g fill="#fff">
+    <circle cx="80" cy="96" r="3" opacity=".8"/><circle cx="420" cy="70" r="2.5" opacity=".7"/>
+    <circle cx="455" cy="200" r="2" opacity=".6"/><circle cx="60" cy="300" r="2" opacity=".6"/>
+    <circle cx="140" cy="440" r="2.5" opacity=".5"/><circle cx="250" cy="60" r="1.8" opacity=".6"/>
+  </g>
+  <circle cx="300" cy="300" r="190" fill="url(#halo)"/>
+  <circle cx="300" cy="300" r="150" fill="url(#pluton)"/>
+  <path d="M300 345c-24-20-52-38-52-66 0-18 14-30 30-30 11 0 18 6 22 13 4-7 11-13 22-13 16 0 30 12 30 30 0 28-28 46-52 66z" fill="#fff6e8" opacity=".9"/>
+  <path d="M60 470 L170 330" stroke="url(#estela)" stroke-width="22" stroke-linecap="round"/>
+  <g transform="translate(176 318) rotate(45) translate(-26 -50)">
+    <path d="M10 60 L0 78 L12 74 Z M42 60 L52 78 L40 74 Z" fill="#ff5f6d"/>
+    <path d="M26 0 C40 14 44 36 42 74 L10 74 C8 36 12 14 26 0 Z" fill="url(#cuerpo)"/>
+    <path d="M26 0 C32 5 36 11 38 18 L14 18 C16 11 20 5 26 0 Z" fill="#ff5f6d"/>
+    <circle cx="26" cy="38" r="8" fill="#3a8dde" stroke="#8592b8" stroke-width="2.5"/>
+  </g>
+</svg>
