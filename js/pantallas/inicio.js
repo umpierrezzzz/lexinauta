@@ -3,6 +3,7 @@ import { numeroDeDia, categoriasDelDia, categoriasPractica, estadoViaje } from "
 import { $, T, ruta, ir, pantalla, escapar, capital, numero, planeta, cohete, COLORES_JUGADOR, cuentaAtrasHastaManana } from "../ui.js";
 import { estado, partidaDeHoy, estadisticas, record, nombrePiloto, guardarNombre } from "../estado.js";
 import { htmlProgresoViaje, animarProgreso, htmlRacha } from "./universo.js";
+import { htmlTarjetaLiga, activarTarjetaLiga } from "./liga.js";
 import { sonido } from "../sonido.js";
 
 function tarjetaModo({ id, icono, titulo, desc, acento, mejor }) {
@@ -74,6 +75,7 @@ ruta("inicio", () => {
       </section>
     </div>
     <div class="inicio-col">
+      ${htmlTarjetaLiga()}
       <h2 class="seccion">${t.modos}</h2>
       <div class="rejilla-modos">${modos.map(tarjetaModo).join("")}</div>
       <h2 class="seccion">${t.multijugador}</h2>
@@ -97,6 +99,7 @@ ruta("inicio", () => {
   </div>`, "inicio");
 
   animarProgreso(raiz, viaje.progreso);
+  activarTarjetaLiga(raiz);
   $("[data-mapa]", raiz).addEventListener("click", () => { sonido.clic(); ir("universo"); });
   raiz.querySelectorAll("[data-hangar]").forEach((b) => b.addEventListener("click", () => { sonido.clic(); ir("hangar"); }));
 

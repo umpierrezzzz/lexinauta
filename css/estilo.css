@@ -434,6 +434,32 @@ h2.seccion::after { content: ""; flex: 1; height: 2px; background: repeating-lin
 .cohete-nuevo { border-left: 4px solid var(--amarillo); }
 .cohete-nuevo .btn { margin-top: 8px; }
 
+/* Liga */
+.liga-tarjeta { display: grid; grid-template-columns: auto 1fr auto; gap: 14px; align-items: center; cursor: pointer; --c-borde: #5a4a12; }
+.liga-tarjeta:hover { --c-borde: var(--amarillo); }
+.liga-tarjeta-texto { display: grid; gap: 2px; min-width: 0; }
+.liga-tarjeta-texto b { font-size: 1.15rem; }
+.liga-tarjeta-texto small { color: var(--tenue); font: 400 .82rem var(--texto); }
+.liga-puesto { font: 700 2rem var(--pixel); color: var(--amarillo); text-shadow: 3px 3px 0 #000; }
+.liga-resultado { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; width: 100%; padding: 8px 12px 10px; background: color-mix(in srgb, var(--amarillo) 12%, var(--panel-2)); clip-path: var(--muesca-int); text-align: left; }
+.liga-resultado span { color: var(--tenue); font-size: .9rem; }
+.liga-cabecera { display: grid; justify-items: center; gap: 10px; text-align: center; }
+.escalera { display: flex; align-items: flex-end; gap: 10px; }
+.peldano { display: grid; place-items: center; }
+.peldano.actual { animation: flotar 3s steps(6) infinite; }
+.clasificacion { display: grid; gap: 4px; margin: 0; padding: 0; list-style: none; }
+.clasificacion .fila { display: grid; grid-template-columns: 30px auto 1fr auto; gap: 10px; align-items: center; padding: 6px 12px 8px; background: var(--panel); clip-path: var(--muesca-int); border-left: 4px solid transparent; animation: entrar .3s steps(4) both; }
+.clasificacion .fila.en-sube { border-left-color: var(--verde); }
+.clasificacion .fila.en-baja { border-left-color: var(--rojo); }
+.clasificacion .fila.yo { background: color-mix(in srgb, var(--amarillo) 16%, var(--panel-2)); }
+.clasificacion .pos { font: 700 1.2rem var(--pixel); color: var(--tenue); text-align: center; }
+.clasificacion .nombre { font-weight: 700; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.clasificacion .nombre small { display: block; color: var(--tenue); font: 400 .75rem var(--texto); }
+.clasificacion .pts { font: 700 1.15rem var(--pixel); }
+.clasificacion .zona { font: 700 .75rem var(--pixel); letter-spacing: .12em; text-transform: uppercase; padding: 6px 4px 2px; }
+.clasificacion .zona.sube { color: var(--verde); }
+.clasificacion .zona.baja { color: var(--rojo); }
+
 /* ==========================================================================
    Sprites en pantallas anchas
    ========================================================================== */

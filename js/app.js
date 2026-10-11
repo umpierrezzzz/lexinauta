@@ -13,6 +13,7 @@ import "./pantallas/local.js";
 import "./pantallas/online.js";
 import "./pantallas/universo.js";
 import { cohetesNuevos } from "./pantallas/hangar.js";
+import "./pantallas/liga.js";
 
 estado.fondo = crearFondo($("#fondo"));
 montarSprites($(".barra"));

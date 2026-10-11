@@ -3,7 +3,8 @@
 Uso (con el servidor en marcha: python -m http.server 8300):
     .venv-dev\\Scripts\\python tests\\capturas.py [es|en] [movil|escritorio] [escenario...]
 
-Escenarios: diario, universo, lluvia, maraton, local, reto, online (por defecto, todos).
+Escenarios: diario, universo, lluvia, maraton, local, reto, online, liga (por defecto, todos).
+"liga" levanta una réplica local de Supabase en Docker (tests/liga_local.py).
 "online" abre dos navegadores (anfitrión e invitado) y necesita internet para el servidor de PeerJS.
 Las capturas quedan en tests/capturas/. Falla si la página tiene errores de JavaScript.
 """
@@ -17,7 +18,7 @@ RAIZ = Path(__file__).resolve().parent.parent
 SALIDA = RAIZ / "tests" / "capturas"
 URL = "http://127.0.0.1:8300/"
 PLAN = [5, 2, 4, 1, 3, 5, 4]   # rareza con la que contestar en cada etapa de la misión diaria
-ESCENARIOS = ["diario", "universo", "lluvia", "maraton", "local", "reto", "online"]
+ESCENARIOS = ["diario", "universo", "lluvia", "maraton", "local", "reto", "online", "liga"]
 
 # Los modos contrarreloj duran 60-90 s: en las pruebas su reloj corre más rápido.
 RELOJ_RAPIDO = """(() => {
@@ -277,6 +278,59 @@ def online(navegador, nuevo_contexto, idioma, pref, errores):
         jugador.p.context.close()
 
 
+def liga(nuevo_contexto, idioma, pref, errores):
+    """Liga con 14 rivales: la tarjeta de la portada, la misión diaria que suma y la clasificación."""
+    sys.path.insert(0, str(Path(__file__).parent))
+    import uuid
+    import liga_local
+    import psycopg
+    liga_local.arrancar()
+    try:
+        nombres = ["Astro", "Nova", "Kepler", "Luna", "Vega", "Orión", "Cometa", "Pulsar", "Quasar", "Lyra",
+                   "Halley", "Sagan", "Hubble", "Gagarin"]
+        modelos = ["retro", "capsula", "platillo", "saturno", "estelar", "vela", "clasico"]
+        with psycopg.connect(liga_local.DSN, autocommit=True) as c:
+            for k, n in enumerate(nombres):
+                c.execute("select liga_registrar(%s, %s, %s)", (uuid.uuid4(), n, modelos[k % len(modelos)]))
+                jid = c.execute("select id from liga_jugadores where alias = %s", (n,)).fetchone()[0]
+                for d in range(1 + k % 4):
+                    c.execute("insert into liga_partidas values (%s, greatest(date_trunc('week', current_date)::date,"
+                              " current_date - %s), %s) on conflict do nothing", (jid, d, 120 + (k * 37) % 300))
+                c.execute("select liga_asignar(%s, date_trunc('week', current_date)::date)", (jid,))
+        ctx = nuevo_contexto()
+        ctx.add_init_script("window.LEXINAUTA_LIGA = { url: 'http://liga.test', clave: '%s' };" % liga_local.clave_anon())
+
+        def reenviar(ruta):
+            destino = ruta.request.url.replace("http://liga.test/rest/v1", liga_local.URL_REST)
+            r = ruta.fetch(url=destino)
+            ruta.fulfill(response=r, headers={**r.headers, "access-control-allow-origin": "*"})
+        ctx.route("http://liga.test/**", reenviar)
+        pg = ctx.new_page()
+        pg.on("pageerror", lambda e: errores.append(f"liga pageerror: {e}"))
+        pg.on("console", lambda m: errores.append(f"liga console.{m.type}: {m.text}") if m.type == "error" else None)
+        j = Partida(pg, idioma, f"{pref}-liga")
+        j.inicio()
+        j.p.wait_for_selector("[data-liga-tarjeta]")
+        j.foto("1-inicio", completa=True, espera=1500)
+        j.p.click("[data-jugar-diario]")
+        for i in range(7):
+            j.p.wait_for_selector(".tarjeta input")
+            j.contestar(elegir(j.categoria(), [4, 3, 5, 2, 4, 3, 5][i]))
+            j.p.wait_for_selector(".resultado-etapa")
+            j.p.click("[data-seguir]")
+        j.p.wait_for_selector("[data-liga-resultado]:not([hidden])", timeout=15000)
+        j.foto("2-resultado", espera=1500)
+        j.p.click("[data-liga-resultado]")
+        j.p.wait_for_selector(".clasificacion .fila.yo", timeout=15000)
+        j.foto("3-clasificacion", completa=True, espera=1200)
+        j.p.click("[data-volver]")
+        j.p.wait_for_selector(".liga-puesto", timeout=15000)
+        j.foto("4-inicio-con-liga", espera=900)
+        ctx.close()
+    finally:
+        liga_local.parar()
+
+
 def jugar(idioma: str, dispositivo: str, escenarios: list[str]) -> list[str]:
     SALIDA.mkdir(parents=True, exist_ok=True)
     errores: list[str] = []
@@ -302,6 +356,9 @@ def jugar(idioma: str, dispositivo: str, escenarios: list[str]) -> list[str]:
                         for pg in ctx.pages:
                             pg.screenshot(path=SALIDA / f"{idioma}-{dispositivo}-online-FALLO-{k}.png")
                     errores.append(f"online: {str(e).splitlines()[0]}")
+                continue
+            if esc == "liga":
+                liga(nuevo_contexto, idioma, f"{idioma}-{dispositivo}", errores)
                 continue
             ctx = nuevo_contexto(ayuda_vista=esc != "diario")
             pagina = ctx.new_page()

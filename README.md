@@ -2,7 +2,17 @@
 
 Juego diario de palabras, en español y en inglés: cada día, 7 categorías iguales para todo el mundo
 («Un queso», «Una constelación»…). Escribe algo que encaje antes de que se acabe el combustible:
-**cuanto más rara tu respuesta, más lejos llega tu cohete**. Luna, Marte, Júpiter… ¿hasta Plutón?
+**cuanto más rara tu respuesta, más lejos llega tu cohete**. Cada misión diaria es un salto por el
+universo: la Luna, Plutón, Alfa Centauri, Andrómeda… hasta el borde del universo observable.
+
+## Progresión
+
+- **Viaje**: solo la misión diaria mueve el cohete (si se juega en los dos idiomas, cuenta la mejor).
+  25 objetos en 4 capítulos con su distancia real; el mapa del universo enseña lo descubierto.
+- **Racha** de días seguidos, con **escudos** (uno cada 7 días, máximo 2) que salvan un día perdido.
+- **Hangar**: 10 cohetes que se desbloquean por racha y por hasta dónde ha llegado el viaje.
+- **Liga semanal** online (opcional, ver abajo): grupos de 30 por división (Lunar → Galáctica);
+  cada lunes suben los 5 primeros y bajan los 5 últimos.
 
 ## Jugar
 
@@ -26,9 +36,8 @@ Doble clic en **`jugar.bat`** (abre <http://127.0.0.1:8300>). Hace falta servirl
 ## Cómo funciona
 
 - **Puntos por rareza**: muy común 10 · común 20 · poco común 35 · rara 55 · rarísima 85.
-- **Destino del día** según los puntos (máximo 7 × 85 = 595): órbita, Luna (60), Marte (120),
+- **Destino de la partida** (en los modos que no son la diaria) según los puntos (máximo 7 × 85 = 595): órbita, Luna (60), Marte (120),
   asteroides (180), Júpiter (240), Saturno (300), Urano (360), Neptuno (420), Plutón (480), Kuiper (560).
-- **Viaje acumulado**: cada punto son 100.000 km; los días se suman (Luna, Marte… hasta el espacio interestelar).
 - **Respuestas**: da igual mayúsculas, tildes, artículo o plural; se perdona una errata (dos en palabras largas).
 - **Reto diario**: determinista por fecha; las categorías se recorren en ciclos barajados sin repetir.
 - Sin servidor ni cuentas: el progreso se guarda en el navegador (`localStorage`). Funciona sin conexión (service worker).
@@ -44,8 +53,11 @@ js/fondo.js             fondo pixel: nebulosas, estrellas en parallax, warp y es
 js/sonido.js            efectos chiptune con Web Audio (sin archivos)
 js/ui.js, js/estado.js  navegación entre pantallas, utilidades, y lo que se guarda en el navegador
 js/red.js               salas online con PeerJS
+js/liga.js, config.js   cliente de la liga semanal (Supabase) y su configuración
+servidor/liga.sql       tablas y funciones de la liga (se pega en el SQL Editor de Supabase)
 js/pantallas/           inicio, rondas (diaria/entrenamiento/reto), contrarreloj (lluvia/maratón),
-                        resultados, reto, local, online, y comun.js (altímetro, combustible, tarjetas)
+                        resultados, reto, local, online, universo, hangar, liga,
+                        y comun.js (altímetro, combustible, tarjetas)
 js/textos.js            textos de la interfaz en español e inglés
 datos/es.json, en.json  categorías y respuestas ("nombre|variante:rareza", rareza 1-5)
 herramientas/           validar_datos.py, pulir_nombres.py (tildes y mayúsculas), tildes_es.py
@@ -68,9 +80,31 @@ python -m venv .venv-dev && .venv-dev\Scripts\pip install playwright
 ```
 `tests/sprites.html` muestra todos los planetas y cohetes para revisar el pixel art.
 
+## Liga online (Supabase)
+
+El juego funciona sin servidor; la liga necesita una base de datos compartida. Se usa Supabase (gratis):
+
+1. Crea una cuenta en <https://supabase.com> y un proyecto nuevo (región Europa; apunta la contraseña).
+2. En el proyecto: **SQL Editor → New query**, pega `servidor/liga.sql` entero y pulsa **Run**.
+3. En **Project Settings → API** copia la *Project URL* y la clave *anon public* en `js/config.js`.
+
+La clave anon es pública por diseño: solo deja llamar a `liga_registrar`, `liga_enviar` y `liga_estado`,
+que validan todo (una misión al día, 0-595 puntos, fecha de hoy). Los jugadores son anónimos: un alias
+y un identificador secreto guardado en su navegador. Ojo: los proyectos gratuitos se pausan tras una
+semana sin uso (se reactivan desde el panel).
+
+Pruebas: `tests/test_liga.py` (reglas de ascenso/descenso, permisos) y el escenario `liga` de
+`tests/capturas.py` usan una réplica local en Docker (`tests/liga_local.py`: Postgres + PostgREST).
+
 ## Camino a Google Play
 
 La app ya es una PWA (manifest, iconos 192/512, service worker). Para publicarla:
-1. Alojar estos archivos en un dominio con https (p. ej. GitHub Pages o Netlify).
-2. Empaquetarla como *Trusted Web Activity* con Bubblewrap (genera el .aab para Play).
-3. Cuenta de desarrollador de Google Play y ficha de la tienda (capturas: `tests/capturas/`).
+1. **Alojarla con https** (gratis): GitHub Pages o Netlify.
+2. **Empaquetarla** como *Trusted Web Activity* (gratis): <https://www.pwabuilder.com> → pegar la URL →
+   Android → genera el `.aab` y el archivo `assetlinks.json`, que hay que subir a `/.well-known/` de la web
+   (así la app se abre sin barra del navegador). Alternativa por consola: Bubblewrap.
+3. **Cuenta de desarrollador de Google Play**: pago único de 25 $ y verificación de identidad.
+4. **Prueba cerrada**: las cuentas personales nuevas deben tener la app en prueba cerrada con al menos
+   12 testers durante 14 días seguidos antes de pedir acceso a producción (normas de 2024-2025; revisar).
+5. **Ficha**: icono 512, gráfico destacado 1024×500, capturas (`tests/capturas/`), política de privacidad
+   (una página sencilla: no hay cuentas; la liga guarda alias y puntuaciones) y cuestionario de contenido.

@@ -1,12 +1,14 @@
 // Pantalla final de las partidas de un jugador: destino alcanzado, etapas, récords, compartir y retar.
 import { destinoDelDia, textoCompartir, codificarReto, ejemplos, estadoViaje, HITOS } from "../motor.js";
-import { $, T, ruta, ir, pantalla, escapar, capital, planeta, cohete, contar, compartirTexto, COLOR_RAREZA,
+import { $, T, ruta, ir, pantalla, montarSprites, escapar, capital, planeta, cohete, contar, compartirTexto, COLOR_RAREZA,
   COLORES_JUGADOR, cuentaAtrasHastaManana } from "../ui.js";
 import { estado, nombrePiloto, registrarRecord, record, puntosViaje, estadisticas, hoyISO } from "../estado.js";
 import { sonido } from "../sonido.js";
 import { htmlRespuestas } from "./comun.js";
 import { htmlProgresoViaje, animarProgreso, htmlRacha } from "./universo.js";
 import { cohetesNuevos, htmlCoheteNuevo, activarEstrenar } from "./hangar.js";
+import { aliasLiga, SPRITE_DIVISION } from "./liga.js";
+import { ligaActiva, enviarPartida } from "../liga.js";
 
 const CUADROS = ["⬛", "🟦", "🟩", "🟨", "🟧", "🟥"];
 
@@ -90,6 +92,7 @@ ruta("resultados", (o) => {
     <p class="final-puntos">${diario ? `${t.saltoDeHoy}: ` : ""}<b data-total>0</b> ${t.puntos}</p>
     ${diario ? `<section class="caja viaje" style="width:100%">
       <div class="viaje-cabecera"><span class="etiqueta">${t.capitulos[viaje.alcanzado.capitulo]}</span>${htmlRacha(estadisticas(estado.idioma))}</div>
+      ${ligaActiva() ? `<button class="liga-resultado" data-liga-resultado hidden></button>` : ""}
       ${htmlProgresoViaje(viaje)}
       ${(o.nuevo ? cohetesNuevos() : []).map(htmlCoheteNuevo).join("")}
       ${descubiertos.map((h) => `<div class="descubrimiento">${planeta(h.id, 20, "", 2)}<div><b>${capital(t.destinos[h.id])}</b>
@@ -109,6 +112,19 @@ ruta("resultados", (o) => {
   </section>`, "final-pantalla");
 
   contar($("[data-total]", raiz), o.puntos);
+  // La misión diaria cuenta para la liga semanal
+  const hueco = $("[data-liga-resultado]", raiz);
+  if (hueco && o.nuevo) {
+    enviarPartida({ fecha: o.fecha || hoyISO(), puntos: o.puntos, alias: aliasLiga(), modelo: estado.cohete }).then((e) => {
+      const fila = e?.grupo?.find((f) => f.yo);
+      if (!fila || !hueco.isConnected) return;
+      hueco.innerHTML = `${planeta(SPRITE_DIVISION[e.division], 12, "", 2)} <b>${t.divisiones[e.division]}</b>
+        <span>${t.posicion(fila.posicion)} ${t.deN(e.grupo.length)} · ${fila.puntos} ${t.puntosSemana}</span>`;
+      montarSprites(hueco);
+      hueco.hidden = false;
+      hueco.addEventListener("click", () => ir("liga"));
+    }).catch(() => {});
+  }
   activarEstrenar(raiz);
   if (diario) animarProgreso(raiz, viaje.progreso, viaje.indice === viajeAntes.indice && o.nuevo ? viajeAntes.progreso : 0);
   estado.fondo?.impulso(Math.min(85, o.puntos / 6), "#ffd23f");
