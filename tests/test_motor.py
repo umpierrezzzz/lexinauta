@@ -60,6 +60,30 @@ async () => {
   ok(v.alcanzado.id === "marte" && v.siguiente.id === "asteroides", "viaje acumulado");
   ok(m.distancia("taleggio", "tallegio") === 2 || m.distancia("taleggio", "tallegio") <= 2, "distancia de edición");
 
+  // Categorías por semilla: reproducibles y sin repetir
+  const a = m.categoriasPorSemilla(ids, 12345), b = m.categoriasPorSemilla(ids, 12345);
+  ok(JSON.stringify(a) === JSON.stringify(b) && new Set(a).size === 7, "categorías por semilla");
+  ok(JSON.stringify(a) !== JSON.stringify(m.categoriasPorSemilla(ids, 54321)), "otra semilla, otras categorías");
+
+  // Choques: misma respuesta, mitad de puntos (redondeando hacia arriba); sin respuesta no choca
+  const ch = m.resolverChoques({
+    a: { respuesta: "avena", puntos: 35 }, b: { respuesta: "avena", puntos: 35 },
+    c: { respuesta: "teff", puntos: 85 }, d: { respuesta: null, puntos: 0 }, e: { respuesta: null, puntos: 0 },
+  });
+  ok(ch.a.choque && ch.b.choque && ch.a.puntos === 18, "choque: mitad redondeada");
+  ok(!ch.c.choque && ch.c.puntos === 85, "sin choque: puntos completos");
+  ok(!ch.d.choque && !ch.e.choque, "dos sin respuesta no chocan");
+
+  // Retos por enlace: ida y vuelta, con tildes y nombres raros
+  const reto = { idioma: "es", categorias: a, nombre: "Dani Ñ «x»",
+    resultados: a.map((_, k) => ({ respuesta: k % 2 ? "plátano" : null, rareza: k % 6, puntos: m.PUNTOS[k % 6] })) };
+  const cod = m.codificarReto(reto);
+  ok(/^[A-Za-z0-9_-]+$/.test(cod), "código de reto apto para URL");
+  const vuelta = m.decodificarReto(cod);
+  ok(vuelta && vuelta.nombre === reto.nombre && JSON.stringify(vuelta.categorias) === JSON.stringify(a), "reto: ida y vuelta");
+  ok(vuelta && vuelta.resultados[1].respuesta === "plátano" && vuelta.resultados[0].respuesta === null, "reto: respuestas");
+  ok(m.decodificarReto("basura!!") === null && m.decodificarReto("") === null, "reto inválido");
+
   // Todas las categorías se preparan y ninguna respuesta queda inaccesible por su propio nombre
   for (const [datos, idioma] of [[es, "es"], [en, "en"]]) {
     for (const c of datos.categorias) {

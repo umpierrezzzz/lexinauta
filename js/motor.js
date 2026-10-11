@@ -234,3 +234,78 @@ const CUADROS = ["⬛", "🟦", "🟩", "🟨", "🟧", "🟥"];
 export function textoCompartir({ titulo, dia, puntos, destino, rarezas }) {
   return `🚀 ${titulo} #${dia}\n${destino} · ${puntos}\n${rarezas.map((r) => CUADROS[r || 0]).join("")}`;
 }
+
+// ---------------------------------------------------------------- modos de juego
+
+export const MODOS = {
+  diario: { rondas: 7, segundos: 25 },
+  practica: { rondas: 7, segundos: 25 },
+  reto: { rondas: 7, segundos: 25 },
+  local: { rondas: 7, segundos: 25 },
+  online: { rondas: 7, segundos: 25 },
+  lluvia: { total: 60 },      // una categoría, todas las respuestas que puedas
+  maraton: { total: 90 },     // categorías sin parar; las raras dan tiempo extra
+};
+
+// Maratón: segundos extra según la rareza, y lo que cuesta saltar una categoría.
+export const BONUS_MARATON = [0, 0, 1, 2, 3, 5];
+export const COSTE_SALTO = 4;
+
+/** Categorías al azar pero reproducibles a partir de una semilla (para retos y salas online). */
+export function categoriasPorSemilla(ids, semilla, n = RONDAS) {
+  return barajar(ids, semilla >>> 0).slice(0, n);
+}
+
+/** Semilla aleatoria de 31 bits. */
+export function nuevaSemilla() { return Math.floor(Math.random() * 2 ** 31); }
+
+/**
+ * Choques: si dos o más jugadores dan la misma respuesta en una ronda, cada uno se lleva la mitad.
+ * Recibe { jugador: {respuesta, puntos} } y devuelve { jugador: {puntos, choque} }.
+ */
+export function resolverChoques(respuestas) {
+  const cuenta = {};
+  for (const r of Object.values(respuestas)) if (r.respuesta) cuenta[r.respuesta] = (cuenta[r.respuesta] || 0) + 1;
+  const final = {};
+  for (const [j, r] of Object.entries(respuestas)) {
+    const choque = !!r.respuesta && cuenta[r.respuesta] > 1;
+    final[j] = { ...r, choque, puntos: choque ? Math.ceil(r.puntos / 2) : r.puntos };
+  }
+  return final;
+}
+
+// ---------------------------------------------------------------- retos por enlace
+
+function aBase64Url(texto) {
+  const bytes = new TextEncoder().encode(texto);
+  let bin = ""; bytes.forEach((b) => { bin += String.fromCharCode(b); });
+  return btoa(bin).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}
+function deBase64Url(codigo) {
+  const b64 = codigo.replace(/-/g, "+").replace(/_/g, "/") + "===".slice((codigo.length + 3) % 4);
+  const bin = atob(b64);
+  return new TextDecoder().decode(Uint8Array.from(bin, (c) => c.charCodeAt(0)));
+}
+
+/** Empaqueta un reto: idioma, categorías, nombre del retador y sus resultados. */
+export function codificarReto({ idioma, categorias, nombre, resultados }) {
+  return aBase64Url(JSON.stringify({
+    v: 1, i: idioma, c: categorias, n: String(nombre || "").slice(0, 20),
+    r: resultados.map((r) => [r.respuesta || "", r.rareza, r.puntos]),
+  }));
+}
+
+export function decodificarReto(codigo) {
+  try {
+    const d = JSON.parse(deBase64Url(codigo));
+    if (d.v !== 1 || !Array.isArray(d.c) || !Array.isArray(d.r)) return null;
+    return {
+      idioma: d.i === "en" ? "en" : "es", categorias: d.c.slice(0, RONDAS).map(String), nombre: String(d.n || ""),
+      resultados: d.r.slice(0, RONDAS).map(([respuesta, rareza, puntos], k) => ({
+        categoria: d.c[k], respuesta: respuesta || null, rareza: Number(rareza) || 0, puntos: Number(puntos) || 0,
+      })),
+    };
+  } catch {
+    return null;
+  }
+}

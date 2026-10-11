@@ -1,11 +1,14 @@
 // Service worker: guarda la app para poder jugar sin conexión.
 // Cambia VERSION al publicar una versión nueva para que se renueve la caché.
-const VERSION = "hp-v1";
+const VERSION = "hp-v2";
 const ARCHIVOS = [
   "./", "index.html", "css/estilo.css",
-  "js/app.js", "js/motor.js", "js/textos.js", "js/estrellas.js",
+  "js/app.js", "js/motor.js", "js/textos.js", "js/ui.js", "js/estado.js", "js/pixel.js", "js/fondo.js", "js/sonido.js",
+  "js/red.js", "js/vendor/peerjs.min.js",
+  "js/pantallas/comun.js", "js/pantallas/inicio.js", "js/pantallas/rondas.js", "js/pantallas/contrarreloj.js",
+  "js/pantallas/resultados.js", "js/pantallas/reto.js", "js/pantallas/local.js", "js/pantallas/online.js",
   "datos/es.json", "datos/en.json",
-  "fuentes/space-grotesk.woff2", "fuentes/jetbrains-mono.woff2",
+  "fuentes/pixelify-sans.woff2", "fuentes/space-grotesk.woff2",
   "iconos/icono.svg", "manifest.webmanifest",
 ];
 
@@ -20,7 +23,7 @@ self.addEventListener("activate", (e) => {
 
 // Red primero (para ver siempre la última versión) y caché si no hay conexión.
 self.addEventListener("fetch", (e) => {
-  if (e.request.method !== "GET") return;
+  if (e.request.method !== "GET" || new URL(e.request.url).origin !== location.origin) return;   // PeerJS va directo
   e.respondWith(
     fetch(e.request)
       .then((r) => { const copia = r.clone(); caches.open(VERSION).then((c) => c.put(e.request, copia)); return r; })

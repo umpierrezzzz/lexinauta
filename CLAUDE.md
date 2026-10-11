@@ -12,3 +12,6 @@ como PWA (Trusted Web Activity).
 - La lógica va en `js/motor.js` (sin DOM) y se prueba con `tests/test_motor.py`.
 - Tras editar datos: `herramientas/pulir_nombres.py` y `herramientas/validar_datos.py`.
 - Commit tras cada cambio que funcione, con mensajes claros en español.
+- Estilo pixel art: sprites en `<canvas>` (`js/pixel.js`) escalados con `--escala`, nada de degradados suaves
+  ni bordes redondeados; animaciones con `steps()`.
+- Cada pantalla es un módulo en `js/pantallas/` que se registra con `ruta()` y se abre con `ir()`.
