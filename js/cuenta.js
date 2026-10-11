@@ -114,8 +114,12 @@ async function rest(ruta, opciones = {}) {
     ...opciones,
     headers: { apikey: conf().clave, Authorization: `Bearer ${s.acceso}`, "Content-Type": "application/json", ...(opciones.headers || {}) },
   });
-  if (!r.ok) throw new Error(`progreso ${r.status}`);
-  return { s, datos: r.status === 204 ? null : await r.json() };
+  if (!r.ok) {
+    const detalle = await r.text().catch(() => "");
+    throw new Error(`${opciones.method || "GET"} ${r.status} ${detalle.slice(0, 160)}`);
+  }
+  const texto = await r.text();
+  return { s, datos: texto ? JSON.parse(texto) : null };
 }
 
 /**
@@ -124,6 +128,21 @@ async function rest(ruta, opciones = {}) {
  */
 export async function sincronizar() {
   if (!sesion()) return false;
+  try {
+    const cambia = await sincronizarYa();
+    almacen.guardar("hp_sync_error", null);
+    return cambia;
+  } catch (e) {
+    console.error("Lexinauta: sincronización", e);
+    almacen.guardar("hp_sync_error", String(e.message || e));
+    throw e;
+  }
+}
+
+/** Último error de sincronización (para enseñarlo y poder reintentar). */
+export function errorSincronizacion() { return almacen.leer("hp_sync_error", null); }
+
+async function sincronizarYa() {
   const { s, datos: filas } = await rest(`progreso?select=datos&usuario=eq.${sesion().id}`);
   const nube = filas[0]?.datos || {};
   const local = progresoLocal();

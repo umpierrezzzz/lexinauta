@@ -71,10 +71,15 @@ async function arrancar() {
   if (codigo && cuentasActivas()) {
     try {
       const s = await completarEntrada(codigo);
-      await sincronizar();
-      estado.cohete = almacen.leer("hp_cohete", estado.cohete);
-      setTimeout(() => aviso(T().bienvenida(s.nombre.split(" ")[0] || s.correo)), 600);
-    } catch { setTimeout(() => aviso(T().errorSesion, "error"), 600); }
+      try {
+        await sincronizar();
+        estado.cohete = almacen.leer("hp_cohete", estado.cohete);
+        setTimeout(() => aviso(T().bienvenida(s.nombre.split(" ")[0] || s.correo)), 600);
+      } catch { setTimeout(() => aviso(T().errorSincronizar, "error"), 600); }
+    } catch (e) {
+      console.error("Lexinauta: inicio de sesión", e);
+      setTimeout(() => aviso(T().errorSesion, "error"), 600);
+    }
   } else if (errorAuth) setTimeout(() => aviso(T().errorSesion, "error"), 600);
   // Con sesión iniciada, se trae lo último de la cuenta (por si se ha jugado en otro dispositivo)
   else if (sesion()) sincronizar().then((cambia) => { if (cambia && $("#pantalla.inicio")) ir("inicio"); }).catch(() => {});

@@ -465,6 +465,8 @@ h2.seccion::after { content: ""; flex: 1; height: 2px; background: repeating-lin
 .cuenta { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; }
 .cuenta-estado { color: var(--verde); font: 700 .85rem var(--pixel); }
 .cuenta-estado small { display: block; color: var(--tenue); font: 400 .75rem var(--texto); }
+.cuenta-estado.aviso { color: var(--amarillo); }
+.cuenta-estado .detalle { color: #ff9aa6; font-family: ui-monospace, monospace; font-size: .7rem; word-break: break-all; }
 .enlace { color: var(--tenue); font: 400 .8rem var(--texto); text-decoration: underline; }
 
 /* ==========================================================================

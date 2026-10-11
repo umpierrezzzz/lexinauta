@@ -128,6 +128,9 @@ export const TEXTOS = {
     cerrarSesion: "Cerrar sesión",
     bienvenida: (n) => `¡Hola, ${n}! Tu progreso está a salvo.`,
     errorSesion: "No se ha podido iniciar sesión. Inténtalo otra vez.",
+    errorSincronizar: "Sesión iniciada, pero no se ha podido guardar el progreso en la nube.",
+    sinSincronizar: "Sin sincronizar",
+    reintentar: "Reintentar",
     seguroSalir: "¿Cerrar sesión? Tu progreso sigue guardado en la cuenta y en este dispositivo.",
 
     // Liga
@@ -368,6 +371,9 @@ export const TEXTOS = {
     cerrarSesion: "Sign out",
     bienvenida: (n) => `Hi, ${n}! Your progress is safe.`,
     errorSesion: "Couldn't sign in. Please try again.",
+    errorSincronizar: "Signed in, but your progress couldn't be saved to the cloud.",
+    sinSincronizar: "Not synced",
+    reintentar: "Retry",
     seguroSalir: "Sign out? Your progress stays saved in your account and on this device.",
 
     liga: "League",

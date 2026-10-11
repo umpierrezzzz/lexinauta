@@ -1,10 +1,10 @@
 // Base de lanzamiento: misión diaria, modos de vuelo, multijugador y el viaje acumulado.
 import { numeroDeDia, categoriasDelDia, categoriasPractica, estadoViaje } from "../motor.js";
-import { $, T, ruta, ir, pantalla, escapar, capital, numero, planeta, cohete, COLORES_JUGADOR, cuentaAtrasHastaManana } from "../ui.js";
+import { $, T, ruta, ir, pantalla, aviso, escapar, capital, numero, planeta, cohete, COLORES_JUGADOR, cuentaAtrasHastaManana } from "../ui.js";
 import { estado, partidaDeHoy, estadisticas, record, nombrePiloto, guardarNombre } from "../estado.js";
 import { htmlProgresoViaje, animarProgreso, htmlRacha } from "./universo.js";
 import { htmlTarjetaLiga, activarTarjetaLiga } from "./liga.js";
-import { cuentasActivas, sesion, entrarConGoogle, salir } from "../cuenta.js";
+import { cuentasActivas, sesion, entrarConGoogle, salir, sincronizar, errorSincronizacion } from "../cuenta.js";
 import { sonido } from "../sonido.js";
 
 function tarjetaModo({ id, icono, titulo, desc, acento, mejor }) {
@@ -44,7 +44,11 @@ function htmlCuenta(t) {
   if (!cuentasActivas()) return "";
   const s = sesion();
   if (!s) return `<button class="btn chico blanco" data-google>${LOGO_GOOGLE} ${t.entrarGoogle}</button>`;
-  return `<div class="cuenta"><span class="cuenta-estado">☁ ${t.guardadoNube}<small>${escapar(s.correo || "")}</small></span>
+  const error = errorSincronizacion();
+  return `<div class="cuenta">${error
+    ? `<span class="cuenta-estado aviso">⚠ ${t.sinSincronizar}<small>${escapar(s.correo || "")}</small><small class="detalle">${escapar(error)}</small></span>
+       <button class="btn chico amarillo" data-reintentar>${t.reintentar}</button>`
+    : `<span class="cuenta-estado">☁ ${t.guardadoNube}<small>${escapar(s.correo || "")}</small></span>`}
     <button class="enlace" data-salir>${t.cerrarSesion}</button></div>`;
 }
 
@@ -116,6 +120,11 @@ ruta("inicio", () => {
   activarTarjetaLiga(raiz);
   $("[data-mapa]", raiz).addEventListener("click", () => { sonido.clic(); ir("universo"); });
   $("[data-google]", raiz)?.addEventListener("click", () => { sonido.clic(); entrarConGoogle(); });
+  $("[data-reintentar]", raiz)?.addEventListener("click", async (e) => {
+    e.currentTarget.disabled = true;
+    try { await sincronizar(); aviso(t.guardadoNube); } catch { aviso(t.errorSincronizar, "error"); }
+    ir("inicio");
+  });
   $("[data-salir]", raiz)?.addEventListener("click", async () => { if (confirm(t.seguroSalir)) { await salir(); ir("inicio"); } });
   raiz.querySelectorAll("[data-hangar]").forEach((b) => b.addEventListener("click", () => { sonido.clic(); ir("hangar"); }));
 

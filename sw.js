@@ -1,6 +1,6 @@
 // Service worker: guarda la app para poder jugar sin conexión.
 // Cambia VERSION al publicar una versión nueva para que se renueve la caché.
-const VERSION = "hp-v7";
+const VERSION = "hp-v8";
 const ARCHIVOS = [
   "./", "index.html", "css/estilo.css",
   "js/app.js", "js/motor.js", "js/textos.js", "js/ui.js", "js/estado.js", "js/pixel.js", "js/fondo.js", "js/sonido.js",
