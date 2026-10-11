@@ -10,7 +10,8 @@ async function rpc(funcion, args) {
   const { url, clave } = conf();
   const r = await fetch(`${url.replace(/\/$/, "")}/rest/v1/rpc/${funcion}`, {
     method: "POST",
-    headers: { apikey: clave, Authorization: `Bearer ${clave}`, "Content-Type": "application/json" },
+    // Las claves antiguas (anon, un JWT «eyJ…») van también como Bearer; las nuevas (sb_publishable_…) solo en apikey
+    headers: { apikey: clave, ...(clave.startsWith("eyJ") ? { Authorization: `Bearer ${clave}` } : {}), "Content-Type": "application/json" },
     body: JSON.stringify(args),
   });
   if (!r.ok) throw new Error(`liga ${funcion}: ${r.status}`);
