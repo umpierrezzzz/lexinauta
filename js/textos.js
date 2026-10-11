@@ -122,6 +122,19 @@ export const TEXTOS = {
     maxJugadores: "Máximo 6 pilotos",
     avisoOnline: "Prototipo: la conexión inicial usa el servidor público de PeerJS.",
 
+    // Hangar
+    hangar: "Hangar",
+    tuCohete: "Tu cohete",
+    elegir: "Elegir",
+    elegido: "En uso",
+    nuevoCohete: "¡Nuevo cohete desbloqueado!",
+    requisitoRacha: (n) => `Racha de ${n} días`,
+    requisitoViaje: (d) => `Llega a ${d}`,
+    cohetes: {
+      clasico: "Clásico", retro: "Retro 1957", capsula: "Cápsula", transbordador: "Transbordador", saturno: "Saturno V",
+      platillo: "Platillo", vela: "Vela solar", dorado: "Dorado", estelar: "Estelar", cristal: "Cristal",
+    },
+
     // Universo y progresión
     universo: "Universo",
     mapaUniverso: "Mapa del universo",
@@ -321,6 +334,18 @@ export const TEXTOS = {
     salir: "Leave",
     maxJugadores: "Up to 6 pilots",
     avisoOnline: "Prototype: the initial connection uses the public PeerJS server.",
+
+    hangar: "Hangar",
+    tuCohete: "Your rocket",
+    elegir: "Choose",
+    elegido: "In use",
+    nuevoCohete: "New rocket unlocked!",
+    requisitoRacha: (n) => `${n}-day streak`,
+    requisitoViaje: (d) => `Reach ${d}`,
+    cohetes: {
+      clasico: "Classic", retro: "Retro 1957", capsula: "Capsule", transbordador: "Shuttle", saturno: "Saturn V",
+      platillo: "Saucer", vela: "Solar sail", dorado: "Golden", estelar: "Starfarer", cristal: "Crystal",
+    },
 
     universo: "Universe",
     mapaUniverso: "Map of the universe",

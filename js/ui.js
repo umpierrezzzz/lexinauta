@@ -54,7 +54,8 @@ export function montarSprites(raiz) {
     el.replaceWith(c);
   });
   $$("[data-cohete]:not(canvas)", raiz).forEach((el) => {
-    const c = canvasCohete(el.dataset.cohete || COLORES_JUGADOR[0], el.className);
+    const modelo = !el.dataset.modelo || el.dataset.modelo === "propio" ? estado.cohete : el.dataset.modelo;
+    const c = canvasCohete(el.dataset.cohete || COLORES_JUGADOR[0], el.className, modelo);
     c.style.setProperty("--w", c.width);
     if (el.dataset.escala) c.style.setProperty("--escala", el.dataset.escala);
     if (el.dataset.jugador) c.dataset.jugador = el.dataset.jugador;
@@ -66,8 +67,9 @@ export function montarSprites(raiz) {
 export function planeta(tipo, tam = 32, clase = "", escala = null) {
   return `<i data-planeta="${tipo}" data-tam="${tam}" class="${clase}"${escala ? ` data-escala="${escala}"` : ""}></i>`;
 }
-export function cohete(color, clase = "", escala = null, jugador = "") {
-  return `<i data-cohete="${color}" class="${clase}"${escala ? ` data-escala="${escala}"` : ""}${jugador !== "" ? ` data-jugador="${jugador}"` : ""}></i>`;
+/** `modelo`: uno del hangar, o "propio" (el que ha elegido el jugador). */
+export function cohete(color, clase = "", escala = null, jugador = "", modelo = "propio") {
+  return `<i data-cohete="${color}" data-modelo="${modelo || "propio"}" class="${clase}"${escala ? ` data-escala="${escala}"` : ""}${jugador !== "" ? ` data-jugador="${jugador}"` : ""}></i>`;
 }
 
 // ---------------------------------------------------------------- piezas comunes

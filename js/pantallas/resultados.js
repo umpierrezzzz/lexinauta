@@ -6,6 +6,7 @@ import { estado, nombrePiloto, registrarRecord, record, puntosViaje, estadistica
 import { sonido } from "../sonido.js";
 import { htmlRespuestas } from "./comun.js";
 import { htmlProgresoViaje, animarProgreso, htmlRacha } from "./universo.js";
+import { cohetesNuevos, htmlCoheteNuevo, activarEstrenar } from "./hangar.js";
 
 const CUADROS = ["⬛", "🟦", "🟩", "🟨", "🟧", "🟥"];
 
@@ -90,6 +91,7 @@ ruta("resultados", (o) => {
     ${diario ? `<section class="caja viaje" style="width:100%">
       <div class="viaje-cabecera"><span class="etiqueta">${t.capitulos[viaje.alcanzado.capitulo]}</span>${htmlRacha(estadisticas(estado.idioma))}</div>
       ${htmlProgresoViaje(viaje)}
+      ${(o.nuevo ? cohetesNuevos() : []).map(htmlCoheteNuevo).join("")}
       ${descubiertos.map((h) => `<div class="descubrimiento">${planeta(h.id, 20, "", 2)}<div><b>${capital(t.destinos[h.id])}</b>
         <small>${t.distancia(h.km)} ${t.desdeLaTierra}</small><p>${t.hechos[h.id]}</p></div></div>`).join("")}
     </section>` : ""}
@@ -107,6 +109,7 @@ ruta("resultados", (o) => {
   </section>`, "final-pantalla");
 
   contar($("[data-total]", raiz), o.puntos);
+  activarEstrenar(raiz);
   if (diario) animarProgreso(raiz, viaje.progreso, viaje.indice === viajeAntes.indice && o.nuevo ? viajeAntes.progreso : 0);
   estado.fondo?.impulso(Math.min(85, o.puntos / 6), "#ffd23f");
 

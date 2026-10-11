@@ -288,6 +288,29 @@ export function calcularRacha(fechas, hoy) {
   return resultado;
 }
 
+// ---------------------------------------------------------------- hangar
+
+// Cohetes que se desbloquean: por mejor racha, por hasta dónde ha llegado el viaje o por la liga.
+export const COHETES = [
+  { id: "clasico" },
+  { id: "retro", racha: 3 },
+  { id: "capsula", viaje: "luna" },
+  { id: "transbordador", racha: 7 },
+  { id: "saturno", viaje: "marte" },
+  { id: "platillo", viaje: "jupiter" },
+  { id: "vela", viaje: "pluton" },
+  { id: "dorado", racha: 30 },
+  { id: "estelar", viaje: "alfacentauri" },
+  { id: "cristal", viaje: "andromeda" },
+];
+
+/** ¿Está desbloqueado este cohete? `est`: { mejorRacha, puntosViaje } */
+export function coheteDesbloqueado(cohete, est) {
+  if (cohete.racha) return est.mejorRacha >= cohete.racha;
+  if (cohete.viaje) return est.puntosViaje >= HITOS.find((h) => h.id === cohete.viaje).pts;
+  return true;
+}
+
 // ---------------------------------------------------------------- compartir
 
 const CUADROS = ["⬛", "🟦", "🟩", "🟨", "🟧", "🟥"];

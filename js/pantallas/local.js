@@ -16,7 +16,7 @@ ruta("local", () => {
   const nombres = guardados?.length >= 2 ? guardados : [nombrePiloto() || `${t.nombrePorDefecto} 1`, `${t.nombrePorDefecto} 2`];
 
   const raiz = pantalla(`<div class="pantalla estrecha">
-    <div class="cabecera-pantalla">${cohete(COLORES_JUGADOR[1], "", 2)}<h1>${t.local}</h1></div>
+    <div class="cabecera-pantalla">${cohete(COLORES_JUGADOR[1], "", 2, "", "clasico")}<h1>${t.local}</h1></div>
     <p class="subtitulo">${t.localDesc}</p>
     <section class="caja">
       <p class="etiqueta" style="margin-bottom:12px">${t.pilotos}</p>
@@ -29,7 +29,7 @@ ruta("local", () => {
   const lista = $("[data-lista]", raiz);
   function pintar() {
     lista.innerHTML = nombres.map((n, i) => `<li>
-      ${cohete(COLORES_JUGADOR[i], "", 2)}
+      ${cohete(COLORES_JUGADOR[i], "", 2, "", i === 0 ? "propio" : "clasico")}
       <span class="campo chico"><input data-i="${i}" maxlength="14" value="${escapar(n)}" aria-label="${t.pilotos} ${i + 1}"></span>
       ${nombres.length > 2 ? `<button class="btn icono chico" data-quitar="${i}" aria-label="${t.quitar}">✕</button>` : ""}
     </li>`).join("");
@@ -48,7 +48,7 @@ ruta("local", () => {
   $("[data-empezar]", raiz).addEventListener("click", () => {
     const limpios = nombres.map((n, i) => n.trim() || `${t.nombrePorDefecto} ${i + 1}`);
     almacen.guardar("hp_pilotos_local", limpios);
-    const jugadores = limpios.map((nombre, i) => ({ nombre, color: COLORES_JUGADOR[i] }));
+    const jugadores = limpios.map((nombre, i) => ({ nombre, color: COLORES_JUGADOR[i], modelo: i === 0 ? "propio" : "clasico" }));
     const rondas = MODOS.local.rondas;
     ir("local-juego", { jugadores, categorias: categoriasPractica(estado.datos[estado.idioma].ids, rondas) });
   });
@@ -65,7 +65,7 @@ export function htmlTablaEtapa(cat, jugadores, resultados, puntosTotales) {
     <p class="etiqueta">${t.resultadosEtapa}</p>
     <h2 class="nombre-cat">${cat.icono} ${escapar(cat.nombre)}</h2>
     <ol class="tabla-etapa">${filas.map(({ j, i, r }, k) => `<li style="--jc:${j.color};--c:${COLOR_RAREZA[r.rareza]};animation-delay:${k * 120}ms">
-      ${cohete(j.color, "", 2)}
+      ${cohete(j.color, "", 2, "", j.modelo)}
       <span class="resp">${r.respuesta ? escapar(capital(r.respuesta)) : "—"}
         <small>${escapar(j.nombre)} · ${puntosTotales[i]} ${t.puntos}${r.choque ? ` · <span class="choque">💥 ${t.choqueCorto}</span>` : ""}</small></span>
       <span class="pts">+${r.puntos}</span></li>`).join("")}</ol>
@@ -80,13 +80,13 @@ export function htmlPodio(jugadores, puntos) {
   return `<section class="final pantalla estrecha">
     <div class="final-escena" aria-hidden="true">
       ${planeta(destinoDelDia(orden[0].puntos).id, 48)}
-      ${cohete(orden[0].color)}
+      ${cohete(orden[0].color, "", null, "", orden[0].modelo)}
     </div>
     <p class="etiqueta">${t.clasificacion}</p>
     <h1 class="destino">${empate ? t.empate : t.ganador(escapar(orden[0].nombre))}</h1>
     <ol class="podio">${orden.map((j, k) => `<li style="--jc:${j.color};animation-delay:${k * 150}ms">
       <span class="puesto">${k + 1}</span>
-      ${cohete(j.color, "", 2)}
+      ${cohete(j.color, "", 2, "", j.modelo)}
       <span class="nombre">${escapar(j.nombre)}<small>${capital(t.destinos[destinoDelDia(j.puntos).id])}</small></span>
       <span class="pts">${j.puntos}</span></li>`).join("")}</ol>
     <div class="acciones" data-acciones></div>
@@ -113,7 +113,7 @@ ruta("local-juego", ({ jugadores, categorias }) => {
   function turno(j) {
     return new Promise((resolver) => {
       const raiz = pantalla(`<section class="caja clara turno" style="--jc:${j.color}">
-        ${cohete(j.color, "", 5)}
+        ${cohete(j.color, "", 5, "", j.modelo)}
         <h1>${t.turnoDe(escapar(j.nombre))}</h1>
         <p class="subtitulo">${t.pasaMovil}</p>
         <button class="btn verde grande ancho" data-seguir>${t.listo}</button>

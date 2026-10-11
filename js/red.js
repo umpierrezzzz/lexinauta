@@ -3,6 +3,7 @@
 // el juego viaja directo entre ellos.
 import { resolverChoques } from "./motor.js";
 import { COLORES_JUGADOR } from "./ui.js";
+import { MODELOS_COHETE } from "./pixel.js";
 
 const PREFIJO = "lexinauta-v1-";
 const LETRAS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
@@ -33,7 +34,7 @@ function conTiempo(promesa, ms, error) {
 /**
  * Sala del anfitrión. `alEvento(msg)` recibe los mismos mensajes que los clientes, así la interfaz es igual para todos.
  */
-export async function crearSala(nombre, alEvento) {
+export async function crearSala(nombre, alEvento, modelo = "clasico") {
   await cargarPeer();
   let peer, codigo;
   for (let intento = 0; intento < 4; intento++) {
@@ -51,7 +52,7 @@ export async function crearSala(nombre, alEvento) {
   const conexiones = new Map();   // id → conexión
   const sala = {
     rol: "anfitrion", codigo, miId: ID_ANFITRION,
-    jugadores: [{ id: ID_ANFITRION, nombre, color: COLORES_JUGADOR[0] }],
+    jugadores: [{ id: ID_ANFITRION, nombre, color: COLORES_JUGADOR[0], modelo }],
     fase: "sala", ronda: -1, rondas: 0, respuestas: {}, puntos: {},
   };
 
@@ -88,7 +89,7 @@ export async function crearSala(nombre, alEvento) {
         const usados = new Set(sala.jugadores.map((j) => j.color));
         const color = COLORES_JUGADOR.find((c) => !usados.has(c));
         conexiones.set(conn.peer, conn);
-        sala.jugadores.push({ id: conn.peer, nombre: String(msg.nombre || "?").slice(0, 16), color });
+        sala.jugadores.push({ id: conn.peer, nombre: String(msg.nombre || "?").slice(0, 16), color, modelo: MODELOS_COHETE.includes(msg.modelo) ? msg.modelo : "clasico" });
         conn.send({ tipo: "bienvenida", tuId: conn.peer });
         difundir(mensajeSala());
         return;
@@ -130,7 +131,7 @@ export async function crearSala(nombre, alEvento) {
 }
 
 /** Unirse a la sala `codigo`. Lanza un error con .motivo = "noExiste" | "conexion". */
-export async function unirseSala(codigo, nombre, alEvento) {
+export async function unirseSala(codigo, nombre, alEvento, modelo = "clasico") {
   await cargarPeer();
   const peer = new window.Peer();
   const fallo = (motivo) => Object.assign(new Error(motivo), { motivo });
@@ -161,7 +162,7 @@ export async function unirseSala(codigo, nombre, alEvento) {
     alEvento(msg);
   });
   conn.on("close", () => { if (!cerradaAdrede) alEvento({ tipo: "desconectado" }); });
-  conn.send({ tipo: "hola", nombre });
+  conn.send({ tipo: "hola", nombre, modelo });
 
   Object.assign(sala, {
     enviar(msg) { if (conn.open) conn.send(msg); },

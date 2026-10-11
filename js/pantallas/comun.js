@@ -33,7 +33,7 @@ export function htmlAltimetro(jugadores, ruta = RUTA) {
     <div class="alt-progreso"></div>
     ${ruta.map((r) => `<div class="alt-planeta${r.menor ? " menor" : ""}${r.lejos ? " lejos" : ""}" data-min="${r.lejos ? 99999 : r.min}"
       data-id="${r.id}" style="--pos:${pos(r.min)}">${planeta(r.id, 12)}<span>${t.destinoCorto[r.id]}</span></div>`).join("")}
-    ${jugadores.map((j, i) => `<div class="alt-cohete n${i}" data-j="${i}" style="--pos:0%">${cohete(j.color)}</div>`).join("")}
+    ${jugadores.map((j, i) => `<div class="alt-cohete n${i}" data-j="${i}" style="--pos:0%">${cohete(j.color, "", null, "", j.modelo)}</div>`).join("")}
   </div>`;
 }
 

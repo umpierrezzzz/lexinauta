@@ -418,6 +418,22 @@ h2.seccion::after { content: ""; flex: 1; height: 2px; background: repeating-lin
 .objeto .chip { margin-top: 8px; }
 .diaria-cabecera .racha { padding: 2px 8px; }
 
+/* Hangar y tarjeta del piloto */
+.piloto { display: grid; grid-template-columns: auto 1fr; gap: 16px; align-items: center; }
+.piloto-cohete { display: grid; place-items: center; width: 84px; height: 100px; background: var(--negro); clip-path: var(--muesca-int); }
+.piloto-cohete:hover canvas { animation: flotar 1s steps(4) infinite; }
+.piloto-datos { display: grid; gap: 8px; min-width: 0; }
+.piloto-datos .btn { justify-self: start; }
+.hangar { display: grid; gap: 10px; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); margin: 0; padding: 0; list-style: none; }
+.hueco { display: grid; justify-items: center; gap: 6px; text-align: center; padding: 16px 10px; }
+.hueco-sprite { height: 96px; display: grid; place-items: end center; }
+.hueco h3 { margin: 0; font: 700 1.05rem var(--pixel); }
+.hueco p { margin: 0; font-size: .82rem; color: var(--tenue); min-height: 1.4em; }
+.hueco.usado { --c-borde: var(--verde); }
+.hueco.bloqueado h3 { color: var(--apagado); }
+.cohete-nuevo { border-left: 4px solid var(--amarillo); }
+.cohete-nuevo .btn { margin-top: 8px; }
+
 /* ==========================================================================
    Sprites en pantallas anchas
    ========================================================================== */

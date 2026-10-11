@@ -451,35 +451,60 @@ function dibujarSonda(canvas, tam, t) {
   }));
 }
 
-// ---------------------------------------------------------------- cohete
+// ---------------------------------------------------------------- cohetes (hangar)
 
-// Media nave (de izquierda al centro); se refleja para la otra mitad, que queda en sombra.
-const MEDIO_COHETE = [
-  ".....o",
-  "....or",
-  "...orr",
-  "...orr",
-  "..owww",
-  "..owww",
-  "..owoo",
-  "..owob",
-  "..owob",
-  "..owoo",
-  "..owww",
-  "..owww",
-  ".oroww",
-  "orrrow",
-  "orrrow",
-  "ooooon",
-];
+// Cada modelo es media nave (de izquierda al centro); se refleja para la otra mitad, que queda en sombra.
+// Letras: o contorno · w casco · r color del piloto · b ventanilla · k metal · y panel/acento · n tobera · . vacío
+const MODELOS = {
+  clasico: { medio: [
+    ".....o", "....or", "...orr", "...orr", "..owww", "..owww", "..owoo", "..owob", "..owob", "..owoo",
+    "..owww", "..owww", ".oroww", "orrrow", "orrrow", "ooooon",
+  ], brillo: [7, 5] },
+  retro: { medio: [
+    ".....o", "....or", "....or", "...orr", "...oww", "..owww", "..owoo", "..owob", "..owob", "..owoo",
+    "..owww", ".oowww", "orrwww", "orrrow", "orr.on", "or....", "o.....",
+  ], brillo: [7, 5] },
+  capsula: { medio: [
+    "......", ".....o", "....ow", "...owb", "...oww", "..owww", "..oooo", "...okk", "yyyokk", "yYyokk",
+    "yyyokk", "...okk", "...orr", "...okk", "....on",
+  ], brillo: [3, 5], paleta: { k: "#7a80a6", K: "#4b5070", y: "#3a6ad8", Y: "#8cb4ff" }, sombra: { k: "K" } },
+  transbordador: { medio: [
+    ".....o", "....ok", "....ow", "...owb", "...oww", "...oww", "...oww", "..owww", "..owww", ".owwww",
+    "owwwww", "owkwww", "okkwww", "oooorr", "....on",
+  ], brillo: [3, 5], paleta: { k: "#2a2c48", K: "#1b1c33" }, sombra: { k: "K" } },
+  saturno: { medio: [
+    ".....r", ".....o", "....ow", "....ow", "....oo", "...oww", "...okw", "...oww", "...oww", "...okk",
+    "...oww", "..owww", "..owww", "..okkw", "..owww", "..owww", ".oowww", "orrkww", "orrooo", "o...on",
+  ], brillo: [7, 4], paleta: { k: "#1f2036", K: "#14152a" }, sombra: { k: "K" } },
+  platillo: { medio: [
+    "......", "......", "....ob", "...obb", "...obb", ".ooooo", "owwwww", "wwywwy", "owwwww", ".ooooo",
+    "...okk",
+  ], brillo: [3, 4], paleta: { k: "#7a80a6", K: "#4b5070", y: "#ffd23f", Y: "#ffd23f" }, sombra: { k: "K" }, llama: "rayo" },
+  vela: { medio: [
+    "kkkkkk", "kcyyyy", "kyyyyy", "kyyyyy", "kyyyyy", "kyyyyk", "kkkkkk", ".....o", "....ow", "...owb",
+    "...oww", "...orr", "....on",
+  ], brillo: [9, 5], paleta: { k: "#c8d0f0", K: "#9aa4c8", y: "#e8ecff", Y: "#b8c0e0", c: "#ffffff" }, sombra: { k: "K", y: "Y" }, llama: "azul" },
+  estelar: { medio: [
+    ".....o", "....ow", "....ow", "...owb", "...owb", "...oww", "...oww", "..owrw", "..owrw", ".owwrw",
+    "owwwrw", "orrrrw", "orr.ow", "or..on", "o.....",
+  ], brillo: [3, 5], llama: "azul" },
+  dorado: { base: "clasico", paleta: { w: "#ffd23f", g: "#c8901a", o: "#3a2000", n: "#7a4a10" } },
+  cristal: { base: "estelar", paleta: { w: "#bdf4ff", g: "#5ab8d8", o: "#123a5a", b: "#ff7ae0", B: "#a03aa0" }, llama: "violeta" },
+};
 const SOMBRA = { w: "g", r: "R", b: "B" };
+export const MODELOS_COHETE = Object.keys(MODELOS);
 
-export function spriteCohete(color = "#ff4f6a") {
+export function spriteCohete(color = "#ff4f6a", modelo = "clasico") {
+  const def = MODELOS[modelo] || MODELOS.clasico;
+  const base = def.base ? MODELOS[def.base] : def;
+  const sombra = { ...SOMBRA, ...(base.sombra || {}), ...(def.sombra || {}) };
   const oscuro = mezclar(color, "#000000", 0.38);
-  const paleta = { o: "#1b1530", w: "#f2f4ff", g: "#a9b0d4", r: color, R: oscuro, b: "#4de1ff", B: "#1f6fbf", c: "#e8fbff", n: "#3b3f5c" };
-  const filas = MEDIO_COHETE.map((m) => m + [...m].reverse().map((c) => SOMBRA[c] || c).join(""));
-  filas[7] = filas[7].slice(0, 5) + "c" + filas[7].slice(6);   // brillo en la ventanilla
-  return { filas, paleta, ancho: 12, alto: filas.length };
+  const paleta = { o: "#1b1530", w: "#f2f4ff", g: "#a9b0d4", r: color, R: oscuro, b: "#4de1ff", B: "#1f6fbf", c: "#e8fbff", n: "#3b3f5c",
+    ...(base.paleta || {}), ...(def.paleta || {}) };
+  const filas = base.medio.map((m) => m + [...m].reverse().map((c) => sombra[c] || c).join(""));
+  const [fy, fx] = base.brillo;
+  filas[fy] = filas[fy].slice(0, fx) + "c" + filas[fy].slice(fx + 1);   // brillo en la ventanilla
+  return { filas, paleta, ancho: 12, alto: filas.length, llama: def.llama || base.llama || "fuego" };
 }
 
 function mezclar(a, b, k) {
@@ -488,9 +513,15 @@ function mezclar(a, b, k) {
   return `#${m(r1, r2)}${m(g1, g2)}${m(b1, b2)}`;
 }
 
+const LLAMAS = {
+  fuego: ["#ff4f3d", "#ffb23d", "#fff3b0"],
+  azul: ["#2a52ff", "#4de1ff", "#e8fbff"],
+  violeta: ["#8a2aff", "#ff7ae0", "#ffe0fa"],
+};
+
 /** Dibuja el cohete (mirando hacia arriba) con su llama animada. `empuje` 0-1 alarga la llama. */
-export function dibujarCohete(canvas, { color = "#ff4f6a", t = 0, empuje = 0.3 } = {}) {
-  const s = spriteCohete(color);
+export function dibujarCohete(canvas, { color = "#ff4f6a", t = 0, empuje = 0.3, modelo = "clasico" } = {}) {
+  const s = spriteCohete(color, modelo);
   const altoLlama = 8;
   canvas.width = s.ancho + 2; canvas.height = s.alto + altoLlama;
   const ctx = canvas.getContext("2d");
@@ -498,9 +529,19 @@ export function dibujarCohete(canvas, { color = "#ff4f6a", t = 0, empuje = 0.3 }
   s.filas.forEach((fila, y) => [...fila].forEach((c, x) => {
     if (s.paleta[c]) { ctx.fillStyle = s.paleta[c]; ctx.fillRect(x + 1, y, 1, 1); }
   }));
+  if (s.llama === "rayo") {
+    // El platillo no tiene motor: un haz de luz que parpadea
+    for (let y = 0; y < altoLlama - 1; y++) {
+      ctx.fillStyle = `rgba(77, 225, 255, ${(0.55 - y * 0.06) * (0.75 + Math.sin(t * 8 + y) * 0.25)})`;
+      const w = 4 + y;
+      ctx.fillRect(1 + s.ancho / 2 - w / 2, s.alto + y, w, 1);
+    }
+    return;
+  }
   // Llama: tres capas que parpadean
   const largo = Math.round(3 + empuje * 5 + Math.sin(t * 30) * 1.2 + hash(Math.floor(t * 20), 1) * 1.5);
-  const capas = [["#ff4f3d", 4, largo], ["#ffb23d", 3, largo - 1], ["#fff3b0", 2, Math.max(1, largo - 3)]];
+  const [c1, c2, c3] = LLAMAS[s.llama];
+  const capas = [[c1, 4, largo], [c2, 3, largo - 1], [c3, 2, Math.max(1, largo - 3)]];
   for (const [col, ancho, l] of capas) {
     ctx.fillStyle = col;
     const x0 = 1 + s.ancho / 2 - ancho / 2;
@@ -547,13 +588,13 @@ export function canvasPlaneta(tipo, tam, clase = "") {
 }
 
 /** Crea un <canvas> con el cohete animado. */
-export function canvasCohete(color, clase = "") {
+export function canvasCohete(color, clase = "", modelo = "clasico") {
   const c = document.createElement("canvas");
   c.className = `pixel cohete-px ${clase}`;
   c.__empuje = 0.3;
   animar(c, (t) => {
     c.__empuje = Math.max(0.3, (c.__empuje || 0.3) * 0.93);
-    dibujarCohete(c, { color, t, empuje: c.__empuje });
+    dibujarCohete(c, { color, t, empuje: c.__empuje, modelo });
   });
   return c;
 }

@@ -49,7 +49,7 @@ ruta("inicio", () => {
   ];
   const multi = [
     { id: "online", icono: planeta("tierra", 20, "", 2), titulo: t.online, desc: t.onlineDesc, acento: "online" },
-    { id: "local", icono: `${cohete(COLORES_JUGADOR[1], "", 2)}${cohete(COLORES_JUGADOR[2], "", 2)}`, titulo: t.local, desc: t.localDesc, acento: "local" },
+    { id: "local", icono: `${cohete(COLORES_JUGADOR[1], "", 2, "", "clasico")}${cohete(COLORES_JUGADOR[2], "", 2, "", "retro")}`, titulo: t.local, desc: t.localDesc, acento: "local" },
   ];
 
   const raiz = pantalla(`<div class="inicio-rejilla">
@@ -64,10 +64,14 @@ ruta("inicio", () => {
         <p class="subtitulo">${t.lema}</p>
       </section>
       ${htmlDiaria(t, dia, hoy, est)}
-      <label class="nombre-piloto caja">
-        <span class="etiqueta">${t.tuNombre}</span>
-        <span class="campo chico"><input data-nombre maxlength="16" value="${escapar(nombrePiloto())}" placeholder="${t.nombrePorDefecto}"></span>
-      </label>
+      <section class="caja piloto">
+        <button class="piloto-cohete" data-hangar aria-label="${t.hangar}">${cohete(COLORES_JUGADOR[0], "", 3)}</button>
+        <div class="piloto-datos">
+          <label class="etiqueta" for="nombre-piloto">${t.tuNombre}</label>
+          <span class="campo chico"><input id="nombre-piloto" data-nombre maxlength="16" value="${escapar(nombrePiloto())}" placeholder="${t.nombrePorDefecto}"></span>
+          <button class="btn chico violeta" data-hangar>🛠 ${t.hangar} · ${t.cohetes[estado.cohete] || ""}</button>
+        </div>
+      </section>
     </div>
     <div class="inicio-col">
       <h2 class="seccion">${t.modos}</h2>
@@ -94,6 +98,7 @@ ruta("inicio", () => {
 
   animarProgreso(raiz, viaje.progreso);
   $("[data-mapa]", raiz).addEventListener("click", () => { sonido.clic(); ir("universo"); });
+  raiz.querySelectorAll("[data-hangar]").forEach((b) => b.addEventListener("click", () => { sonido.clic(); ir("hangar"); }));
 
   $("[data-jugar-diario]", raiz)?.addEventListener("click", () => ir("diario"));
   $("[data-ver-diario]", raiz)?.addEventListener("click", () => {

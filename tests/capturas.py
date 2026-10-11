@@ -115,6 +115,15 @@ class Partida:
         self.foto("universo-2-mapa", espera=1200)
         self.foto("universo-3-mapa-entero", completa=True)
         self.p.click("[data-volver]")
+        self.p.wait_for_selector(".inicio")
+        self.p.click(".piloto .btn[data-hangar]")
+        self.p.wait_for_selector("[data-elegir='saturno']")
+        self.foto("universo-hangar-1", completa=True, espera=800)
+        self.p.click("[data-elegir='saturno']")
+        self.foto("universo-hangar-2", espera=600)
+        self.p.click("[data-volver]")
+        self.p.wait_for_selector(".inicio")
+        self.p.evaluate("localStorage.setItem('hp_cohetes_vistos', JSON.stringify(['clasico']))")   # para ver el anuncio
         self.p.click("[data-jugar-diario]")
         for i in range(7):
             self.p.wait_for_selector(".tarjeta input")
@@ -286,7 +295,13 @@ def jugar(idioma: str, dispositivo: str, escenarios: list[str]) -> list[str]:
 
         for esc in escenarios:
             if esc == "online":
-                online(navegador, nuevo_contexto, idioma, f"{idioma}-{dispositivo}", errores)
+                try:
+                    online(navegador, nuevo_contexto, idioma, f"{idioma}-{dispositivo}", errores)
+                except Exception as e:
+                    for k, ctx in enumerate(navegador.contexts):
+                        for pg in ctx.pages:
+                            pg.screenshot(path=SALIDA / f"{idioma}-{dispositivo}-online-FALLO-{k}.png")
+                    errores.append(f"online: {str(e).splitlines()[0]}")
                 continue
             ctx = nuevo_contexto(ayuda_vista=esc != "diario")
             pagina = ctx.new_page()

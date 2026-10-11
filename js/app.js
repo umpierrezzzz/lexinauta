@@ -12,6 +12,7 @@ import "./pantallas/reto.js";
 import "./pantallas/local.js";
 import "./pantallas/online.js";
 import "./pantallas/universo.js";
+import { cohetesNuevos } from "./pantallas/hangar.js";
 
 estado.fondo = crearFondo($("#fondo"));
 montarSprites($(".barra"));
@@ -49,6 +50,7 @@ $("#boton-idioma").addEventListener("click", async () => {
   cambiarIdioma(estado.idioma === "es" ? "en" : "es");
   await cargarDatos();
   textosCabecera();
+  if (almacen.leer("hp_cohetes_vistos", null) === null) cohetesNuevos();   // primera vez: lo ya desbloqueado no se anuncia
   ir("inicio");
 });
 
@@ -61,6 +63,7 @@ async function arrancar() {
 
   await cargarDatos();
   textosCabecera();
+  if (almacen.leer("hp_cohetes_vistos", null) === null) cohetesNuevos();   // primera vez: lo ya desbloqueado no se anuncia
   if (reto) ir("reto", reto);
   else if (sala) ir("online", { unirse: sala });
   else {

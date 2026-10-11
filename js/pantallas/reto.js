@@ -16,7 +16,7 @@ ruta("reto", (reto) => {
   const raiz = pantalla(`<section class="final pantalla estrecha">
     <div class="final-escena" aria-hidden="true">
       ${planeta(destino, 48)}
-      ${cohete(COLORES_JUGADOR[1])}
+      ${cohete(COLORES_JUGADOR[1], "", null, "", "clasico")}
     </div>
     <span class="chip rosa">${t.retoDe(escapar(nombre))}</span>
     <h1 class="destino">${capital(t.destinos[destino])}</h1>

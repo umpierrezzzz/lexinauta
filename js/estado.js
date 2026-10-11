@@ -20,7 +20,13 @@ export const estado = {
   idioma: idiomaInicial(),
   datos: {},   // idioma → { ids, porId }
   fondo: null, // efectos del fondo (impulso)
+  cohete: almacen.leer("hp_cohete", "clasico"),   // modelo del hangar
 };
+
+export function elegirCohete(id) {
+  estado.cohete = id;
+  almacen.guardar("hp_cohete", id);
+}
 
 export async function cargarDatos(idioma = estado.idioma) {
   if (estado.datos[idioma]) return estado.datos[idioma];

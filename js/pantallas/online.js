@@ -10,7 +10,7 @@ import { htmlTablaEtapa, htmlPodio } from "./local.js";
 
 function htmlJugadores(jugadores, miId, respondidos = null) {
   return `<div class="jugadores">${jugadores.map((j) => `<span class="jugador${j.id === miId ? " yo" : ""}" style="--jc:${j.color}">
-    ${cohete(j.color, "", 2)}<b>${escapar(j.nombre)}</b>${respondidos?.includes(j.id) ? ` <span class="listo">✓</span>` : ""}</span>`).join("")}</div>`;
+    ${cohete(j.color, "", 2, "", j.id === miId ? "propio" : j.modelo)}<b>${escapar(j.nombre)}</b>${respondidos?.includes(j.id) ? ` <span class="listo">✓</span>` : ""}</span>`).join("")}</div>`;
 }
 
 ruta("online", ({ unirse = "" } = {}) => {
@@ -47,7 +47,7 @@ ruta("online", ({ unirse = "" } = {}) => {
       e.currentTarget.disabled = true;
       e.currentTarget.textContent = t.conectando;
       try {
-        sala = await crearSala(nombre(), alEvento);
+        sala = await crearSala(nombre(), alEvento, estado.cohete);
         if (cerrada) sala.cerrar();
       } catch {
         if (!cerrada) pintarEntrada(t.errorConexion);
@@ -60,7 +60,7 @@ ruta("online", ({ unirse = "" } = {}) => {
       const boton = $("button[type=submit]", raiz);
       boton.disabled = true; boton.textContent = t.conectando;
       try {
-        sala = await unirseSala(codigo, nombre(), alEvento);
+        sala = await unirseSala(codigo, nombre(), alEvento, estado.cohete);
         if (cerrada) { sala.cerrar(); return; }
         if (!partida) pintarSala();
       } catch (err) {

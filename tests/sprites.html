@@ -15,7 +15,7 @@
 <div class="fila" id="pequenos"></div>
 <div class="fila" id="cohetes"></div>
 <script type="module">
-  import { canvasPlaneta, canvasCohete, PLANETAS } from "../js/pixel.js";
+  import { canvasPlaneta, canvasCohete, PLANETAS, MODELOS_COHETE } from "../js/pixel.js";
   for (const [id, tam, escala, cont] of [[null, 48, 4, "planetas"], [null, 16, 3, "pequenos"]]) {
     for (const tipo of Object.keys(PLANETAS)) {
       const f = document.createElement("figure");
@@ -25,11 +25,12 @@
       document.getElementById(cont).append(f);
     }
   }
-  for (const color of ["#ff4f6a", "#4de1ff", "#ffd23f", "#3ddc84"]) {
+  for (const [k, modelo] of MODELOS_COHETE.entries()) {
+    const color = ["#ff4f6a", "#4de1ff", "#ffd23f", "#3ddc84", "#b77dff"][k % 5];
     const f = document.createElement("figure");
-    const c = canvasCohete(color);
+    const c = canvasCohete(color, "", modelo);
     requestAnimationFrame(() => { c.style.width = c.width * 6 + "px"; });
-    f.append(c, color);
+    f.append(c, modelo);
     document.getElementById("cohetes").append(f);
   }
 </script>
