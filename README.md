@@ -16,6 +16,9 @@ universo: la Luna, Plutón, Alfa Centauri, Andrómeda… hasta el borde del univ
 
 ## Jugar
 
+Publicado en **<https://umpierrezzzz.github.io/lexinauta/>** (GitHub Pages: cada `git push` a `main`
+actualiza la web en un par de minutos).
+
 Doble clic en **`jugar.bat`** (abre <http://127.0.0.1:8300>). Hace falta servirlo por http
 (no funciona abriendo `index.html` directamente, porque carga los datos con `fetch`).
 

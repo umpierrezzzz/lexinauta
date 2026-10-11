@@ -24,7 +24,8 @@ export function htmlTarjetaLiga() {
 
 function contenidoTarjeta(e) {
   const t = T();
-  if (!e) return `<span class="etiqueta">${t.ligaSemanal}</span><p class="suave" style="margin:0">${t.entraLiga}</p>`;
+  if (!e) return `${planeta(SPRITE_DIVISION[0], 20, "silueta", 2)}
+    <div class="liga-tarjeta-texto"><span class="etiqueta">${t.ligaSemanal}</span><small>${t.entraLiga}</small></div>`;
   const fila = miFila(e);
   return `${planeta(SPRITE_DIVISION[e.division], 20, "", 2)}
     <div class="liga-tarjeta-texto">

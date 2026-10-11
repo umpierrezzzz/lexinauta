@@ -15,3 +15,6 @@ como PWA (Trusted Web Activity).
 - Estilo pixel art: sprites en `<canvas>` (`js/pixel.js`) escalados con `--escala`, nada de degradados suaves
   ni bordes redondeados; animaciones con `steps()`.
 - Cada pantalla es un módulo en `js/pantallas/` que se registra con `ruta()` y se abre con `ir()`.
+- Publicado en GitHub Pages (repo público umpierrezzzz/lexinauta): `git push` despliega. Los commits de este
+  repo usan el correo privado de GitHub (configurado en el repo), nunca un correo personal.
+- Al cambiar archivos del juego, sube `VERSION` en `sw.js` para que los móviles renueven la caché.
