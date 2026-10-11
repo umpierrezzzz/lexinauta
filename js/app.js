@@ -11,6 +11,7 @@ import "./pantallas/resultados.js";
 import "./pantallas/reto.js";
 import "./pantallas/local.js";
 import "./pantallas/online.js";
+import "./pantallas/universo.js";
 
 estado.fondo = crearFondo($("#fondo"));
 montarSprites($(".barra"));

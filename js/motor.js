@@ -198,33 +198,94 @@ export function destinoDelDia(puntos) {
   return destino;
 }
 
-// Viaje acumulado: cada punto son 100.000 km. Distancias aproximadas desde la Tierra
-// (para los planetas, la distancia media; sirven como hitos del viaje, no como efemérides).
-export const KM_POR_PUNTO = 100000;
-export const HITOS_VIAJE = [
-  { km: 384400, id: "luna" },
-  { km: 225e6, id: "marte" },
-  { km: 400e6, id: "asteroides" },
-  { km: 628e6, id: "jupiter" },
-  { km: 1.28e9, id: "saturno" },
-  { km: 2.72e9, id: "urano" },
-  { km: 4.35e9, id: "neptuno" },
-  { km: 5.9e9, id: "pluton" },
-  { km: 7.5e9, id: "kuiper" },
-  { km: 25e9, id: "voyager" },
-];
+// ---------------------------------------------------------------- el viaje por el universo
 
-/** Dónde está la nave en el viaje acumulado: último hito alcanzado, siguiente y progreso entre ambos. */
-export function estadoViaje(puntosTotales) {
-  const km = puntosTotales * KM_POR_PUNTO;
-  let anterior = { km: 0, id: "tierra" };
-  for (const h of HITOS_VIAJE) {
-    if (km < h.km) {
-      return { km, alcanzado: anterior, siguiente: h, progreso: (km - anterior.km) / (h.km - anterior.km) };
-    }
-    anterior = h;
+// Solo la misión diaria hace avanzar el cohete: cada día es un salto tan largo como los puntos conseguidos.
+// Los hitos están a una distancia en puntos pensada para el ritmo de juego (unos 250 puntos al día:
+// el Sistema Solar en dos semanas, la Vía Láctea en un par de meses, el borde del universo en un año)
+// y a su distancia real desde la Tierra, que se muestra interpolando en escala logarítmica.
+const AL = 9.4607e12;   // un año luz, en km
+export const CAPITULOS = [
+  { id: "solar", hitos: [
+    { id: "tierra", pts: 0, km: 0 }, { id: "luna", pts: 60, km: 384400 }, { id: "marte", pts: 300, km: 225e6 },
+    { id: "asteroides", pts: 700, km: 400e6 }, { id: "jupiter", pts: 1100, km: 628e6 }, { id: "saturno", pts: 1600, km: 1.28e9 },
+    { id: "urano", pts: 2100, km: 2.72e9 }, { id: "neptuno", pts: 2600, km: 4.35e9 }, { id: "pluton", pts: 3100, km: 5.9e9 },
+    { id: "kuiper", pts: 3600, km: 7.5e9 },
+  ] },
+  { id: "lactea", hitos: [
+    { id: "oort", pts: 4500, km: 1.5e12 }, { id: "alfacentauri", pts: 5500, km: 4.37 * AL }, { id: "sirio", pts: 6600, km: 8.6 * AL },
+    { id: "vega", pts: 7800, km: 25 * AL }, { id: "pleyades", pts: 9200, km: 444 * AL }, { id: "betelgeuse", pts: 10800, km: 548 * AL },
+    { id: "orion", pts: 12500, km: 1344 * AL }, { id: "centro", pts: 15000, km: 26000 * AL },
+  ] },
+  { id: "local", hitos: [
+    { id: "magallanes", pts: 18000, km: 160000 * AL }, { id: "andromeda", pts: 22000, km: 2.5e6 * AL },
+    { id: "triangulo", pts: 26000, km: 2.73e6 * AL },
+  ] },
+  { id: "profundo", hitos: [
+    { id: "m87", pts: 32000, km: 5.35e7 * AL }, { id: "laniakea", pts: 40000, km: 2.5e8 * AL },
+    { id: "cuasar", pts: 50000, km: 2.44e9 * AL }, { id: "borde", pts: 65000, km: 4.65e10 * AL },
+  ] },
+];
+export const HITOS = CAPITULOS.flatMap((c) => c.hitos.map((h) => ({ ...h, capitulo: c.id })));
+
+/** Dónde está el cohete: último hito alcanzado, el siguiente, progreso entre ambos y distancia real aproximada. */
+export function estadoViaje(puntos) {
+  let i = 0;
+  while (i + 1 < HITOS.length && HITOS[i + 1].pts <= puntos) i++;
+  const alcanzado = HITOS[i], siguiente = HITOS[i + 1] || null;
+  if (!siguiente) {
+    // Más allá del borde: se sigue avanzando, sin más hitos
+    return { puntos, alcanzado, siguiente: null, progreso: 1, km: alcanzado.km * (1 + (puntos - alcanzado.pts) / 20000), indice: i };
   }
-  return { km, alcanzado: anterior, siguiente: null, progreso: 1 };
+  const progreso = (puntos - alcanzado.pts) / (siguiente.pts - alcanzado.pts);
+  const km = alcanzado.km > 0
+    ? Math.exp(Math.log(alcanzado.km) + (Math.log(siguiente.km) - Math.log(alcanzado.km)) * progreso)
+    : siguiente.km * progreso;
+  return { puntos, alcanzado, siguiente, progreso, km, indice: i };
+}
+
+/** Los hitos que caen en un salto de `desde` a `desde + ancho` puntos (más el de partida y el siguiente). */
+export function tramoViaje(desde, ancho = RONDAS * PUNTOS[5]) {
+  const { indice } = estadoViaje(desde);
+  const dentro = HITOS.filter((h, k) => k > indice && h.pts <= desde + ancho);
+  const despues = HITOS.find((h) => h.pts > desde + ancho) || null;
+  return { desde, hasta: desde + ancho, inicio: HITOS[indice], dentro, despues };
+}
+
+// ---------------------------------------------------------------- rachas
+
+function fechaLocal(iso) { const [a, m, d] = iso.split("-").map(Number); return new Date(a, m - 1, d); }
+function isoLocal(f) {
+  return `${f.getFullYear()}-${String(f.getMonth() + 1).padStart(2, "0")}-${String(f.getDate()).padStart(2, "0")}`;
+}
+
+export const DIAS_POR_ESCUDO = 7;
+export const MAX_ESCUDOS = 2;
+
+/**
+ * Racha de días seguidos con misión diaria completada. Cada 7 días de racha se gana un escudo (máximo 2);
+ * si un día no se juega, se gasta un escudo automáticamente y la racha sigue. Hoy sin jugar todavía no rompe nada.
+ * `fechas`: fechas ISO (AAAA-MM-DD) con la misión completada.
+ */
+export function calcularRacha(fechas, hoy) {
+  const jugadas = new Set(fechas);
+  const resultado = { racha: 0, escudos: 0, mejor: 0, protegidos: [] };
+  if (jugadas.size === 0) return resultado;
+  const orden = [...jugadas].sort();
+  const d = fechaLocal(orden[0]);
+  const fin = fechaLocal(hoy);
+  for (; d <= fin; d.setDate(d.getDate() + 1)) {
+    const iso = isoLocal(d);
+    if (jugadas.has(iso)) {
+      resultado.racha++;
+      if (resultado.racha % DIAS_POR_ESCUDO === 0) resultado.escudos = Math.min(MAX_ESCUDOS, resultado.escudos + 1);
+    } else if (iso !== hoy) {
+      if (resultado.racha > 0 && resultado.escudos > 0) { resultado.escudos--; resultado.protegidos.push(iso); }
+      else resultado.racha = 0;
+    }
+    resultado.mejor = Math.max(resultado.mejor, resultado.racha);
+  }
+  return resultado;
 }
 
 // ---------------------------------------------------------------- compartir

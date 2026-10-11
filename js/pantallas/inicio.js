@@ -1,7 +1,8 @@
 // Base de lanzamiento: misión diaria, modos de vuelo, multijugador y el viaje acumulado.
-import { numeroDeDia, categoriasDelDia, categoriasPractica, destinoDelDia, estadoViaje, KM_POR_PUNTO } from "../motor.js";
+import { numeroDeDia, categoriasDelDia, categoriasPractica, estadoViaje } from "../motor.js";
 import { $, T, ruta, ir, pantalla, escapar, capital, numero, planeta, cohete, COLORES_JUGADOR, cuentaAtrasHastaManana } from "../ui.js";
 import { estado, partidaDeHoy, estadisticas, record, nombrePiloto, guardarNombre } from "../estado.js";
+import { htmlProgresoViaje, animarProgreso, htmlRacha } from "./universo.js";
 import { sonido } from "../sonido.js";
 
 function tarjetaModo({ id, icono, titulo, desc, acento, mejor }) {
@@ -13,17 +14,14 @@ function tarjetaModo({ id, icono, titulo, desc, acento, mejor }) {
   </button>`;
 }
 
-function htmlDiaria(t, dia, hoy) {
-  const ruta7 = ["luna", "marte", "jupiter", "saturno", "neptuno", "pluton"];
-  const cabecera = `<div class="diaria-cabecera"><span class="chip">${t.diario} #${dia}</span></div>`;
+function htmlDiaria(t, dia, hoy, est) {
+  const cabecera = `<div class="diaria-cabecera"><span class="chip">${t.diario} #${dia}</span>${htmlRacha(est)}</div>`;
   if (hoy?.completa) {
-    const destino = destinoDelDia(hoy.puntos).id;
     return `<section class="caja destacada diaria">
       ${cabecera}
       <div class="diaria-hecha">
-        ${planeta(destino, 24, "", 3)}
-        <span class="suave">${t.hoyHasLlegado}</span>
-        <b>${capital(t.destinos[destino])} · ${hoy.puntos} ${t.puntos}</b>
+        <span class="suave">${t.saltoDeHoy}</span>
+        <b>+${hoy.puntos} ${t.puntos}</b>
       </div>
       <button class="btn grande ancho" data-ver-diario>${t.verResultado}</button>
       <p class="suave" style="margin:0">${t.yaJugado} <span class="cuenta" data-cuenta>${cuentaAtrasHastaManana()}</span></p>
@@ -31,7 +29,6 @@ function htmlDiaria(t, dia, hoy) {
   }
   return `<section class="caja destacada diaria">
     ${cabecera}
-    <div class="diaria-ruta" aria-hidden="true">${planeta("tierra", 12, "", 2)}${ruta7.map((p) => `<span class="tramo"></span>${planeta(p, 12, "", 2)}`).join("")}</div>
     <p class="subtitulo">${t.diarioDesc}</p>
     <button class="btn amarillo grande ancho" data-jugar-diario>🚀 ${hoy ? `${t.despegar} · ${hoy.etapas?.length || 0}/7` : t.despegar}</button>
   </section>`;
@@ -43,8 +40,7 @@ ruta("inicio", () => {
   const dia = numeroDeDia();
   const hoy = partidaDeHoy(idioma);
   const est = estadisticas(idioma);
-  const viaje = estadoViaje(est.totalPuntos);
-  const siguiente = viaje.siguiente?.id || "voyager";
+  const viaje = estadoViaje(est.puntosViaje);
 
   const modos = [
     { id: "lluvia", icono: planeta("asteroides", 20, "", 2), titulo: t.lluvia, desc: t.lluviaDesc, acento: "lluvia", mejor: record("lluvia") },
@@ -60,14 +56,14 @@ ruta("inicio", () => {
     <div class="inicio-col">
       <section class="hero">
         <div class="hero-escena" aria-hidden="true">
-          ${planeta("saturno", 40)}
+          ${planeta(viaje.alcanzado.id, viaje.alcanzado.id === "saturno" ? 40 : 52)}
           ${planeta("luna", 12, "luna-px", 3)}
           ${cohete(COLORES_JUGADOR[0], "", 3)}
         </div>
         <h1 class="titulo-pixel">${t.titulo}</h1>
         <p class="subtitulo">${t.lema}</p>
       </section>
-      ${htmlDiaria(t, dia, hoy)}
+      ${htmlDiaria(t, dia, hoy, est)}
       <label class="nombre-piloto caja">
         <span class="etiqueta">${t.tuNombre}</span>
         <span class="campo chico"><input data-nombre maxlength="16" value="${escapar(nombrePiloto())}" placeholder="${t.nombrePorDefecto}"></span>
@@ -78,33 +74,26 @@ ruta("inicio", () => {
       <div class="rejilla-modos">${modos.map(tarjetaModo).join("")}</div>
       <h2 class="seccion">${t.multijugador}</h2>
       <div class="rejilla-modos">${multi.map(tarjetaModo).join("")}</div>
-      <p class="aviso-pie">${t.retoDesc}</p>
+      <p class="aviso-pie">${t.soloDiaria} ${t.retoDesc}</p>
       <h2 class="seccion">${t.tuViaje}</h2>
       <section class="caja viaje">
         <div class="viaje-cabecera">
-          <span class="viaje-km">${numero(viaje.km)} km <small>${t.recorridos}</small></span>
+          <span class="etiqueta">${t.capitulos[viaje.alcanzado.capitulo]}</span>
+          <span class="viaje-km">${t.distancia(viaje.km)} <small>${t.desdeLaTierra}</small></span>
         </div>
-        <div class="viaje-pista">
-          ${planeta(viaje.alcanzado.id, 12, "", 2)}
-          <div class="pista"><div class="pista-hecha" data-hecha></div><div class="pista-cohete" data-cohete-viaje>${cohete(COLORES_JUGADOR[0], "", 2)}</div></div>
-          ${planeta(siguiente, 12, "", 2)}
-        </div>
-        <div class="viaje-pie"><span>${capital(t.destinoCorto[viaje.alcanzado.id])}</span>
-          <span>${viaje.siguiente ? `${t.proximoDestino}: ${t.destinoCorto[siguiente]} · ${numero((viaje.siguiente.km - viaje.km) / KM_POR_PUNTO)} ${t.puntos}` : t.hasLlegado}</span></div>
+        ${htmlProgresoViaje(viaje)}
         <div class="estadisticas">
           <div class="estadistica"><b>${est.partidas}</b><span>${t.partidas}</span></div>
-          <div class="estadistica"><b>${est.racha}</b><span>${t.racha}</span></div>
+          <div class="estadistica"><b>${est.mejorRacha}</b><span>${t.mejorRacha}</span></div>
           <div class="estadistica"><b>${est.mejor}</b><span>${t.mejor}</span></div>
         </div>
+        <button class="btn violeta ancho" data-mapa>🔭 ${t.verMapa}</button>
       </section>
     </div>
   </div>`, "inicio");
 
-  requestAnimationFrame(() => requestAnimationFrame(() => {
-    const p = `${Math.round(viaje.progreso * 100)}%`;
-    $("[data-hecha]", raiz).style.width = p;
-    $("[data-cohete-viaje]", raiz).style.left = p;
-  }));
+  animarProgreso(raiz, viaje.progreso);
+  $("[data-mapa]", raiz).addEventListener("click", () => { sonido.clic(); ir("universo"); });
 
   $("[data-jugar-diario]", raiz)?.addEventListener("click", () => ir("diario"));
   $("[data-ver-diario]", raiz)?.addEventListener("click", () => {

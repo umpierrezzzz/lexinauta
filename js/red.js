@@ -4,7 +4,7 @@
 import { resolverChoques } from "./motor.js";
 import { COLORES_JUGADOR } from "./ui.js";
 
-const PREFIJO = "hasta-pluton-v1-";
+const PREFIJO = "lexinauta-v1-";
 const LETRAS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 export const MAX_JUGADORES = 6;
 export const ID_ANFITRION = "anfitrion";

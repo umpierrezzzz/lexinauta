@@ -2,7 +2,7 @@
 
 export const TEXTOS = {
   es: {
-    titulo: "Hasta Plutón",
+    titulo: "Lexinauta",
     lema: "Cuanto más rara tu respuesta, más lejos llega tu cohete.",
     lanzamiento: "Lanzamiento",
     despegar: "Despegar",
@@ -122,27 +122,93 @@ export const TEXTOS = {
     maxJugadores: "Máximo 6 pilotos",
     avisoOnline: "Prototipo: la conexión inicial usa el servidor público de PeerJS.",
 
+    // Universo y progresión
+    universo: "Universo",
+    mapaUniverso: "Mapa del universo",
+    verMapa: "Ver el mapa",
+    capitulos: { solar: "Sistema Solar", lactea: "Vía Láctea", local: "Grupo Local", profundo: "Universo profundo" },
+    capitulo: "Capítulo",
+    saltoDeHoy: "Salto de hoy",
+    avanzas: (p) => `Tu cohete avanza ${p} pts`,
+    nuevoDescubrimiento: "¡Nuevo descubrimiento!",
+    porDescubrir: "Por descubrir",
+    faltan: (p) => `a ${p} pts`,
+    estasAqui: "Estás aquí",
+    soloDiaria: "Solo la misión diaria mueve tu cohete por el universo.",
+    noAvanza: "No mueve tu cohete",
+    desdeLaTierra: "desde la Tierra",
+    dias: (n) => `${n} día${n === 1 ? "" : "s"}`,
+    escudos: "Escudos",
+    escudoInfo: "Cada 7 días seguidos ganas un escudo (máx. 2): si un día no juegas, te salva la racha.",
+    mejorRacha: "Mejor racha",
+    rachaDe: (n) => `🔥 Racha de ${n} día${n === 1 ? "" : "s"}`,
+    distancia(km) {
+      const AL = 9.4607e12, n = (x, d = 0) => x.toLocaleString("es-ES", { maximumFractionDigits: d });
+      if (km < 1e6) return `${n(km)} km`;
+      if (km < 1e9) return `${n(km / 1e6)} millones de km`;
+      if (km < 1e11) return `${n(km / 1e9, 1)} mil millones de km`;
+      if (km < 0.1 * AL) return `${n(km / 1.496e8)} UA`;
+      const al = km / AL;
+      if (al < 1e6) return `${n(al, al < 10 ? 1 : 0)} años luz`;
+      if (al < 1e9) return `${n(al / 1e6, 1)} millones de años luz`;
+      return `${n(al / 1e9, 1)} mil millones de años luz`;
+    },
+    hechos: {
+      tierra: "Tu base de lanzamiento. Todo empieza aquí.",
+      luna: "La luz tarda 1,3 segundos en llegar desde aquí.",
+      marte: "Olympus Mons mide casi tres veces el Everest.",
+      asteroides: "Millones de rocas, pero tan separadas que las sondas lo cruzan sin esquivar nada.",
+      jupiter: "Su Gran Mancha Roja es una tormenta más grande que la Tierra.",
+      saturno: "Sus anillos miden 280.000 km de ancho y apenas un kilómetro de grosor.",
+      urano: "Gira tumbado: su eje está inclinado 98 grados.",
+      neptuno: "Tiene los vientos más rápidos del sistema solar: más de 2.000 km/h.",
+      pluton: "Su corazón helado de nitrógeno lo fotografió la New Horizons en 2015.",
+      kuiper: "Un cinturón de mundos helados: aquí viven Arrokoth y los cometas de periodo corto.",
+      oort: "Una esfera de billones de cometas que marca el final de la influencia del Sol.",
+      alfacentauri: "El sistema estelar más cercano: tres estrellas, y una de ellas con planetas.",
+      sirio: "La estrella más brillante del cielo nocturno, con una enana blanca como compañera.",
+      vega: "Fue la estrella polar hace 12.000 años y lo volverá a ser.",
+      pleyades: "Las Siete Hermanas: un cúmulo de estrellas jóvenes y azules.",
+      betelgeuse: "Una supergigante roja: si estuviera en el lugar del Sol, se tragaría Júpiter.",
+      orion: "Una fábrica de estrellas visible a simple vista bajo el cinturón de Orión.",
+      centro: "Sagitario A*: un agujero negro de cuatro millones de soles.",
+      magallanes: "Una galaxia satélite de la nuestra, visible desde el hemisferio sur.",
+      andromeda: "Nuestra vecina gigante: chocará con la Vía Láctea dentro de unos 4.500 millones de años.",
+      triangulo: "El objeto más lejano que se puede ver sin telescopio (con un cielo muy oscuro).",
+      m87: "Su agujero negro fue el primero fotografiado, en 2019.",
+      laniakea: "«Cielo inmenso» en hawaiano: el supercúmulo de 100.000 galaxias donde vivimos.",
+      cuasar: "El primer cuásar identificado: brilla más que 4 billones de soles.",
+      borde: "Hasta aquí ha podido llegar la luz desde el Big Bang. ¿Y más allá?",
+    },
+
     ayuda: [
       "Cada etapa muestra una categoría, por ejemplo <i>«Un queso»</i>. Escribe algo que encaje antes de que se acabe el <b>combustible</b>.",
       "Las respuestas <b>comunes</b> dan poco empuje; las <b>raras</b>, mucho. <i>Cheddar</i> te deja en órbita; <i>taleggio</i> te lanza hacia Júpiter.",
       "Si fallas, pierdes 3 segundos y puedes volver a intentarlo. Da igual tildes, mayúsculas o plurales.",
-      "Tus puntos son distancia: Luna, Marte, Júpiter… ¿llegarás <b>hasta Plutón</b>? En multijugador, si dos decís lo mismo, <b>chocáis</b>.",
+      "Cada misión diaria es un <b>salto</b>: tus puntos llevan el cohete de la Luna a Plutón, a otras estrellas y a otras galaxias. Juega cada día para no perder la <b>racha</b>.",
+      "Los otros modos son para entrenar y jugar con amigos: no mueven tu cohete. En multijugador, si dos decís lo mismo, <b>chocáis</b>.",
     ],
     rareza: ["Sin puntos", "Muy común", "Común", "Poco común", "Rara", "Rarísima"],
     destinos: {
       tierra: "la Tierra", orbita: "la órbita", luna: "la Luna", marte: "Marte",
       asteroides: "el cinturón de asteroides", jupiter: "Júpiter", saturno: "Saturno", urano: "Urano",
       neptuno: "Neptuno", pluton: "Plutón", kuiper: "el cinturón de Kuiper", voyager: "el espacio interestelar",
+      oort: "la nube de Oort", alfacentauri: "Alfa Centauri", sirio: "Sirio", vega: "Vega", pleyades: "las Pléyades",
+      betelgeuse: "Betelgeuse", orion: "la nebulosa de Orión", centro: "el centro de la galaxia",
+      magallanes: "la Gran Nube de Magallanes", andromeda: "Andrómeda", triangulo: "la galaxia del Triángulo",
+      m87: "M87 y su agujero negro", laniakea: "Laniakea", cuasar: "el cuásar 3C 273", borde: "el borde del universo observable",
     },
     destinoCorto: {
       tierra: "Tierra", orbita: "Órbita", luna: "Luna", marte: "Marte", asteroides: "Asteroides",
       jupiter: "Júpiter", saturno: "Saturno", urano: "Urano", neptuno: "Neptuno", pluton: "Plutón",
-      kuiper: "Kuiper", voyager: "Interestelar",
+      kuiper: "Kuiper", voyager: "Interestelar", oort: "Oort", alfacentauri: "Alfa Centauri", sirio: "Sirio", vega: "Vega",
+      pleyades: "Pléyades", betelgeuse: "Betelgeuse", orion: "Orión", centro: "Sagitario A*", magallanes: "Magallanes",
+      andromeda: "Andrómeda", triangulo: "Triángulo", m87: "M87", laniakea: "Laniakea", cuasar: "3C 273", borde: "Borde",
     },
   },
 
   en: {
-    titulo: "Reach Pluto",
+    titulo: "Lexinaut",
     lema: "The rarer your answer, the farther your rocket flies.",
     lanzamiento: "Launch",
     despegar: "Lift off",
@@ -256,22 +322,87 @@ export const TEXTOS = {
     maxJugadores: "Up to 6 pilots",
     avisoOnline: "Prototype: the initial connection uses the public PeerJS server.",
 
+    universo: "Universe",
+    mapaUniverso: "Map of the universe",
+    verMapa: "See the map",
+    capitulos: { solar: "Solar System", lactea: "Milky Way", local: "Local Group", profundo: "Deep universe" },
+    capitulo: "Chapter",
+    saltoDeHoy: "Today's jump",
+    avanzas: (p) => `Your rocket flies ${p} pts`,
+    nuevoDescubrimiento: "New discovery!",
+    porDescubrir: "Undiscovered",
+    faltan: (p) => `at ${p} pts`,
+    estasAqui: "You are here",
+    soloDiaria: "Only the daily mission moves your rocket through the universe.",
+    noAvanza: "Doesn't move your rocket",
+    desdeLaTierra: "from Earth",
+    dias: (n) => `${n} day${n === 1 ? "" : "s"}`,
+    escudos: "Shields",
+    escudoInfo: "Every 7 days in a row you earn a shield (max. 2): if you miss a day, it saves your streak.",
+    mejorRacha: "Best streak",
+    rachaDe: (n) => `🔥 ${n}-day streak`,
+    distancia(km) {
+      const AL = 9.4607e12, n = (x, d = 0) => x.toLocaleString("en-GB", { maximumFractionDigits: d });
+      if (km < 1e6) return `${n(km)} km`;
+      if (km < 1e9) return `${n(km / 1e6)} million km`;
+      if (km < 1e11) return `${n(km / 1e9, 1)} billion km`;
+      if (km < 0.1 * AL) return `${n(km / 1.496e8)} AU`;
+      const al = km / AL;
+      if (al < 1e6) return `${n(al, al < 10 ? 1 : 0)} light-years`;
+      if (al < 1e9) return `${n(al / 1e6, 1)} million light-years`;
+      return `${n(al / 1e9, 1)} billion light-years`;
+    },
+    hechos: {
+      tierra: "Your launch pad. Everything starts here.",
+      luna: "Light takes 1.3 seconds to get here.",
+      marte: "Olympus Mons is almost three times as tall as Everest.",
+      asteroides: "Millions of rocks, yet so far apart that probes fly through without dodging anything.",
+      jupiter: "Its Great Red Spot is a storm bigger than Earth.",
+      saturno: "Its rings are 280,000 km wide and barely a kilometre thick.",
+      urano: "It spins on its side: its axis is tilted 98 degrees.",
+      neptuno: "The fastest winds in the solar system: over 2,000 km/h.",
+      pluton: "New Horizons photographed its frozen nitrogen heart in 2015.",
+      kuiper: "A belt of icy worlds, home to Arrokoth and short-period comets.",
+      oort: "A sphere of trillions of comets marking the edge of the Sun's reach.",
+      alfacentauri: "The nearest star system: three stars, one of them with planets.",
+      sirio: "The brightest star in the night sky, with a white dwarf companion.",
+      vega: "It was the pole star 12,000 years ago and will be again.",
+      pleyades: "The Seven Sisters: a cluster of young blue stars.",
+      betelgeuse: "A red supergiant: in the Sun's place, it would swallow Jupiter.",
+      orion: "A star factory you can see with the naked eye below Orion's belt.",
+      centro: "Sagittarius A*: a black hole of four million suns.",
+      magallanes: "A satellite galaxy of ours, visible from the southern hemisphere.",
+      andromeda: "Our giant neighbour: it will collide with the Milky Way in about 4.5 billion years.",
+      triangulo: "The most distant thing you can see without a telescope (under a very dark sky).",
+      m87: "Its black hole was the first ever photographed, in 2019.",
+      laniakea: "“Immense heaven” in Hawaiian: the supercluster of 100,000 galaxies we live in.",
+      cuasar: "The first quasar identified: it shines brighter than 4 trillion suns.",
+      borde: "This is as far as light has travelled since the Big Bang. And beyond?",
+    },
+
     ayuda: [
       "Each stage shows a category, like <i>“A cheese”</i>. Type something that fits before your <b>fuel</b> runs out.",
       "<b>Common</b> answers give a small push; <b>rare</b> ones, a huge one. <i>Cheddar</i> gets you to orbit; <i>taleggio</i> sends you towards Jupiter.",
       "Wrong answers cost 3 seconds, and you can try again. Capitals, accents and plurals don't matter.",
-      "Your points are distance: the Moon, Mars, Jupiter… can you <b>reach Pluto</b>? In multiplayer, if two of you give the same answer, you <b>crash</b>.",
+      "Each daily mission is a <b>jump</b>: your points fly the rocket from the Moon to Pluto, to other stars and other galaxies. Play every day to keep your <b>streak</b>.",
+      "The other modes are for practice and playing with friends: they don't move your rocket. In multiplayer, if two of you give the same answer, you <b>crash</b>.",
     ],
     rareza: ["No points", "Very common", "Common", "Uncommon", "Rare", "Ultra rare"],
     destinos: {
       tierra: "Earth", orbita: "orbit", luna: "the Moon", marte: "Mars",
       asteroides: "the asteroid belt", jupiter: "Jupiter", saturno: "Saturn", urano: "Uranus",
       neptuno: "Neptune", pluton: "Pluto", kuiper: "the Kuiper belt", voyager: "interstellar space",
+      oort: "the Oort cloud", alfacentauri: "Alpha Centauri", sirio: "Sirius", vega: "Vega", pleyades: "the Pleiades",
+      betelgeuse: "Betelgeuse", orion: "the Orion Nebula", centro: "the galactic centre",
+      magallanes: "the Large Magellanic Cloud", andromeda: "Andromeda", triangulo: "the Triangulum Galaxy",
+      m87: "M87 and its black hole", laniakea: "Laniakea", cuasar: "quasar 3C 273", borde: "the edge of the observable universe",
     },
     destinoCorto: {
       tierra: "Earth", orbita: "Orbit", luna: "Moon", marte: "Mars", asteroides: "Asteroids",
       jupiter: "Jupiter", saturno: "Saturn", urano: "Uranus", neptuno: "Neptune", pluton: "Pluto",
-      kuiper: "Kuiper", voyager: "Interstellar",
+      kuiper: "Kuiper", voyager: "Interstellar", oort: "Oort", alfacentauri: "Alpha Centauri", sirio: "Sirius", vega: "Vega",
+      pleyades: "Pleiades", betelgeuse: "Betelgeuse", orion: "Orion", centro: "Sagittarius A*", magallanes: "Magellanic",
+      andromeda: "Andromeda", triangulo: "Triangulum", m87: "M87", laniakea: "Laniakea", cuasar: "3C 273", borde: "Edge",
     },
   },
 };

@@ -1,10 +1,11 @@
 // Pantalla final de las partidas de un jugador: destino alcanzado, etapas, récords, compartir y retar.
-import { destinoDelDia, textoCompartir, codificarReto, ejemplos } from "../motor.js";
+import { destinoDelDia, textoCompartir, codificarReto, ejemplos, estadoViaje, HITOS } from "../motor.js";
 import { $, T, ruta, ir, pantalla, escapar, capital, planeta, cohete, contar, compartirTexto, COLOR_RAREZA,
   COLORES_JUGADOR, cuentaAtrasHastaManana } from "../ui.js";
-import { estado, nombrePiloto, registrarRecord, record, sumarAlViaje } from "../estado.js";
+import { estado, nombrePiloto, registrarRecord, record, puntosViaje, estadisticas, hoyISO } from "../estado.js";
 import { sonido } from "../sonido.js";
 import { htmlRespuestas } from "./comun.js";
+import { htmlProgresoViaje, animarProgreso, htmlRacha } from "./universo.js";
 
 const CUADROS = ["⬛", "🟦", "🟩", "🟨", "🟧", "🟥"];
 
@@ -24,11 +25,15 @@ export function enlaceReto(categorias, etapas) {
 ruta("resultados", (o) => {
   const t = T();
   const datos = estado.datos[estado.idioma];
-  const destino = destinoDelDia(o.puntos).id;
+  // En la misión diaria, el destino es el punto del universo al que ha llegado el cohete tras el salto de hoy
+  const diario = o.modo === "diario";
+  const antes = diario ? puntosViaje(o.fecha || hoyISO()) : 0;
+  const viajeAntes = estadoViaje(antes), viaje = estadoViaje(antes + o.puntos);
+  const descubiertos = diario ? HITOS.filter((h) => h.pts > antes && h.pts <= antes + o.puntos) : [];
+  const destino = diario ? viaje.alcanzado.id : destinoDelDia(o.puntos).id;
 
   let esRecord = false;
   if (o.nuevo) {
-    if (o.modo !== "diario") sumarAlViaje(o.puntos);
     if (["lluvia", "maraton", "practica"].includes(o.modo)) esRecord = registrarRecord(o.modo, o.puntos);
     sonido.fin();
   }
@@ -75,13 +80,19 @@ ruta("resultados", (o) => {
 
   const raiz = pantalla(`<section class="final pantalla estrecha">
     <div class="final-escena" aria-hidden="true">
-      ${planeta(destino === "kuiper" ? "kuiper" : destino, 48)}
+      ${planeta(destino, 48)}
       ${cohete(COLORES_JUGADOR[0])}
     </div>
     <p class="etiqueta">${titulos[o.modo] || ""}</p>
-    <p class="suave" style="margin:0">${t.hoyHasLlegado}</p>
+    <p class="suave" style="margin:0">${diario ? (descubiertos.length ? t.nuevoDescubrimiento : t.estasAqui) : t.hoyHasLlegado}</p>
     <h1 class="destino">${capital(t.destinos[destino])}</h1>
-    <p class="final-puntos"><b data-total>0</b> ${t.puntos}</p>
+    <p class="final-puntos">${diario ? `${t.saltoDeHoy}: ` : ""}<b data-total>0</b> ${t.puntos}</p>
+    ${diario ? `<section class="caja viaje" style="width:100%">
+      <div class="viaje-cabecera"><span class="etiqueta">${t.capitulos[viaje.alcanzado.capitulo]}</span>${htmlRacha(estadisticas(estado.idioma))}</div>
+      ${htmlProgresoViaje(viaje)}
+      ${descubiertos.map((h) => `<div class="descubrimiento">${planeta(h.id, 20, "", 2)}<div><b>${capital(t.destinos[h.id])}</b>
+        <small>${t.distancia(h.km)} ${t.desdeLaTierra}</small><p>${t.hechos[h.id]}</p></div></div>`).join("")}
+    </section>` : ""}
     ${esRecord ? `<p class="veredicto nuevo-record">★ ${t.nuevoRecord} ★</p>` : mejor && repetible ? `<p class="suave" style="margin:0">${t.record}: ${mejor}</p>` : ""}
     ${veredicto ? `<p class="veredicto">${veredicto}</p>` : ""}
     ${filas ? `<ol class="lista-etapas">${filas}</ol>` : ""}
@@ -96,6 +107,7 @@ ruta("resultados", (o) => {
   </section>`, "final-pantalla");
 
   contar($("[data-total]", raiz), o.puntos);
+  if (diario) animarProgreso(raiz, viaje.progreso, viaje.indice === viajeAntes.indice && o.nuevo ? viajeAntes.progreso : 0);
   estado.fondo?.impulso(Math.min(85, o.puntos / 6), "#ffd23f");
 
   $("[data-volver]", raiz).addEventListener("click", () => ir("inicio"));

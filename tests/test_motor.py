@@ -56,8 +56,29 @@ async () => {
   ok(m.numeroDeDia(new Date(2026, 9, 11)) === 1, "lanzamiento #1 el 11/10/2026");
   ok(m.destinoDelDia(0).id === "tierra" && m.destinoDelDia(59).id === "orbita" && m.destinoDelDia(60).id === "luna", "destinos del día");
   ok(m.destinoDelDia(595).id === "kuiper", "máximo: Kuiper");
-  const v = m.estadoViaje(2250);   // 225 millones de km
-  ok(v.alcanzado.id === "marte" && v.siguiente.id === "asteroides", "viaje acumulado");
+  const v = m.estadoViaje(2250);
+  ok(v.alcanzado.id === "urano" && v.siguiente.id === "neptuno", "viaje acumulado");
+  ok(v.km > 2.72e9 && v.km < 4.35e9, "distancia interpolada entre hitos");
+  ok(m.estadoViaje(0).alcanzado.id === "tierra" && m.estadoViaje(0).km === 0, "viaje: salida");
+  ok(m.estadoViaje(1e6).siguiente === null && m.estadoViaje(1e6).alcanzado.id === "borde", "viaje: más allá del borde");
+  ok(m.HITOS.every((h, k) => k === 0 || (h.pts > m.HITOS[k - 1].pts && h.km > m.HITOS[k - 1].km)), "hitos ordenados");
+  const tr = m.tramoViaje(1000);
+  ok(tr.inicio.id === "asteroides" && tr.dentro.map((h) => h.id).join() === "jupiter" && tr.despues.id === "saturno", "tramo del día");
+
+  // Rachas con escudos
+  const dias = (desde, n, saltar = []) => Array.from({ length: n }, (_, k) => {
+    const f = new Date(2026, 9, desde + k);
+    return `${f.getFullYear()}-${String(f.getMonth() + 1).padStart(2, "0")}-${String(f.getDate()).padStart(2, "0")}`;
+  }).filter((_, k) => !saltar.includes(k));
+  let rc = m.calcularRacha(dias(1, 5), "2026-10-05");
+  ok(rc.racha === 5 && rc.escudos === 0, "racha simple");
+  ok(m.calcularRacha(dias(1, 5), "2026-10-06").racha === 5, "hoy sin jugar no rompe la racha");
+  ok(m.calcularRacha(dias(1, 5), "2026-10-07").racha === 0, "un día sin jugar y sin escudo: racha a cero");
+  rc = m.calcularRacha(dias(1, 10, [8]), "2026-10-10");   // 8 seguidos (escudo a los 7), falla el 9, juega el 10
+  ok(rc.racha === 9 && rc.escudos === 0 && rc.protegidos[0] === "2026-10-09", "el escudo salva la racha");
+  rc = m.calcularRacha(dias(1, 30), "2026-10-30");
+  ok(rc.escudos === 2 && rc.mejor === 30, "máximo dos escudos");
+  ok(m.calcularRacha([], "2026-10-10").racha === 0, "sin partidas");
   ok(m.distancia("taleggio", "tallegio") === 2 || m.distancia("taleggio", "tallegio") <= 2, "distancia de edición");
 
   // Categorías por semilla: reproducibles y sin repetir

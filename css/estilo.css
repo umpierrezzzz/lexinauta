@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Hasta Plutón · pixel art moderno
+   Lexinauta · pixel art moderno
    Paneles y botones con esquinas en escalón, sombras duras, tipografía pixel,
    sprites en <canvas> escalados con image-rendering: pixelated.
    ========================================================================== */
@@ -382,6 +382,43 @@ h2.seccion::after { content: ""; flex: 1; height: 2px; background: repeating-lin
 .inicio-col, .juego, .juego-rejilla > * { min-width: 0; }
 
 /* ==========================================================================
+   Viaje por el universo, racha y mapa
+   ========================================================================== */
+.silueta { filter: brightness(0) drop-shadow(0 0 0 #3a3f7a) drop-shadow(1px 0 0 #3a3f7a) drop-shadow(-1px 0 0 #3a3f7a); opacity: .9; }
+.alt-planeta.lejos { opacity: .6; }
+.alt-planeta.lejos::after { content: "›"; position: absolute; right: -10px; top: 50%; transform: translateY(-55%); color: var(--apagado); font-size: 1.1rem; }
+
+.racha { display: inline-flex; align-items: center; gap: 8px; font: 700 .95rem var(--pixel); }
+.racha-fuego b { color: var(--naranja); font-size: 1.15rem; }
+.racha-fuego.apagada { filter: grayscale(1); opacity: .6; }
+.racha-escudos { display: inline-flex; gap: 2px; }
+.racha-escudos { gap: 4px; }
+.escudo { fill: var(--borde); }
+.escudo .brillo { fill: transparent; }
+.escudo.lleno { fill: var(--cian); }
+.escudo.lleno .brillo { fill: #d8f8ff; }
+
+.descubrimiento { display: grid; grid-template-columns: auto 1fr; gap: 12px; align-items: center; text-align: left; padding: 10px 12px 12px;
+  background: color-mix(in srgb, var(--amarillo) 10%, var(--panel-2)); clip-path: var(--muesca-int); animation: entrar .5s steps(6) .6s both; }
+.descubrimiento b { font-size: 1.1rem; color: var(--amarillo); }
+.descubrimiento small { display: block; color: var(--tenue); font: 400 .8rem var(--texto); }
+.descubrimiento p { margin: 4px 0 0; font-size: .9rem; color: #d6dbff; }
+
+.capitulo { display: grid; gap: 10px; }
+.capitulo.cerrado { opacity: .75; }
+.objetos { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.objeto { display: grid; grid-template-columns: 84px 1fr; gap: 14px; align-items: center; padding: 12px; background: var(--panel); clip-path: var(--muesca-int); }
+.objeto-sprite { display: grid; place-items: center; min-height: 72px; }
+.objeto h3 { margin: 0; font: 700 1.15rem var(--pixel); }
+.objeto p { margin: 2px 0 0; font-size: .88rem; color: #cdd2f5; }
+.objeto .objeto-dist { color: var(--cian); font: 700 .78rem var(--pixel); letter-spacing: .04em; }
+.objeto.oculto h3 { color: var(--apagado); }
+.objeto.oculto p { color: var(--apagado); }
+.objeto.aqui { background: color-mix(in srgb, var(--amarillo) 12%, var(--panel-2)); box-shadow: inset 4px 0 0 var(--amarillo); }
+.objeto .chip { margin-top: 8px; }
+.diaria-cabecera .racha { padding: 2px 8px; }
+
+/* ==========================================================================
    Sprites en pantallas anchas
    ========================================================================== */
 @media (min-width: 900px) {
@@ -398,7 +435,8 @@ h2.seccion::after { content: ""; flex: 1; height: 2px; background: repeating-lin
   .inicio-rejilla { display: grid; grid-template-columns: 1.05fr 1fr; gap: 20px; align-items: start; }
   .inicio-col { display: grid; gap: 16px; }
   .hero-escena { height: 250px; }
-  .juego-rejilla { display: grid; grid-template-columns: 120px minmax(0, 620px); justify-content: center; gap: 28px; align-items: start; }
+  .juego-rejilla { display: grid; grid-template-columns: 170px minmax(0, 620px); justify-content: center; gap: 20px; align-items: start; }
+  .juego-rejilla > aside { padding-right: 70px; }
   .altimetro { height: min(66vh, 580px); margin: 30px 0 0; }
   .altimetro::before { left: 50%; right: auto; top: 0; bottom: 0; width: 2px; height: auto; background: repeating-linear-gradient(180deg, var(--apagado) 0 4px, transparent 4px 8px); }
   .alt-progreso { left: calc(50% - 1px); top: auto; bottom: 0; width: 4px; height: var(--pos, 0%); transition: height .9s steps(10); background: repeating-linear-gradient(180deg, var(--naranja) 0 4px, var(--amarillo) 4px 8px); }

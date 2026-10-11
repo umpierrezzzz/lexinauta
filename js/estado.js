@@ -1,5 +1,5 @@
 // Estado global y todo lo que se guarda en el navegador (historial, récords, nombre, idioma).
-import { prepararCategoria } from "./motor.js";
+import { prepararCategoria, calcularRacha } from "./motor.js";
 
 export const almacen = {
   leer(clave, defecto) {
@@ -56,24 +56,35 @@ export function partidaDeHoy(idioma) {
   return p;
 }
 
-export function estadisticas(idioma) {
-  const h = historial();
-  const mias = Object.entries(h).filter(([k, p]) => k.startsWith(idioma + ":") && p.completa);
-  const fechas = new Set(mias.map(([k]) => k.slice(idioma.length + 1)));
-  let racha = 0;
-  const d = new Date();
-  if (!fechas.has(hoyISO(d))) d.setDate(d.getDate() - 1);   // la racha sigue viva si jugaste ayer
-  while (fechas.has(hoyISO(d))) { racha++; d.setDate(d.getDate() - 1); }
-  const diarios = Object.values(h).filter((p) => p.completa).reduce((s, p) => s + p.puntos, 0);
-  return {
-    partidas: mias.length, mejor: Math.max(0, ...mias.map(([, p]) => p.puntos)), racha,
-    totalPuntos: diarios + almacen.leer("hp_viaje_extra", 0),
-  };
+/**
+ * Misiones diarias completadas por fecha. Si un día se juega en los dos idiomas, cuenta la mejor de las dos:
+ * así jugar dos veces no hace avanzar el doble.
+ */
+export function diasJugados() {
+  const porFecha = {};
+  for (const [clave, p] of Object.entries(historial())) {
+    if (!p.completa) continue;
+    const fecha = clave.slice(clave.indexOf(":") + 1);
+    porFecha[fecha] = Math.max(porFecha[fecha] ?? 0, p.puntos);
+  }
+  return porFecha;
 }
 
-/** Los otros modos también hacen avanzar el viaje, pero a un cuarto de velocidad (para que el diario siga mandando). */
-export function sumarAlViaje(puntos) {
-  almacen.guardar("hp_viaje_extra", almacen.leer("hp_viaje_extra", 0) + Math.round(puntos / 4));
+/** Puntos acumulados del viaje (solo misiones diarias). `antesDe`: sin contar ese día ni los siguientes. */
+export function puntosViaje(antesDe = null) {
+  return Object.entries(diasJugados()).filter(([f]) => !antesDe || f < antesDe).reduce((s, [, p]) => s + p, 0);
+}
+
+export function estadisticas(idioma) {
+  const dias = diasJugados();
+  const mias = Object.entries(historial()).filter(([k, p]) => k.startsWith(idioma + ":") && p.completa);
+  const racha = calcularRacha(Object.keys(dias), hoyISO());
+  return {
+    partidas: Object.keys(dias).length,
+    mejor: Math.max(0, ...mias.map(([, p]) => p.puntos)),
+    racha: racha.racha, escudos: racha.escudos, mejorRacha: racha.mejor,
+    puntosViaje: Object.values(dias).reduce((s, p) => s + p, 0),
+  };
 }
 
 // ---------------------------------------------------------------- récords por modo

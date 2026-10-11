@@ -3,7 +3,7 @@
 Uso (con el servidor en marcha: python -m http.server 8300):
     .venv-dev\\Scripts\\python tests\\capturas.py [es|en] [movil|escritorio] [escenario...]
 
-Escenarios: diario, lluvia, maraton, local, reto, online (por defecto, todos).
+Escenarios: diario, universo, lluvia, maraton, local, reto, online (por defecto, todos).
 "online" abre dos navegadores (anfitrión e invitado) y necesita internet para el servidor de PeerJS.
 Las capturas quedan en tests/capturas/. Falla si la página tiene errores de JavaScript.
 """
@@ -17,7 +17,7 @@ RAIZ = Path(__file__).resolve().parent.parent
 SALIDA = RAIZ / "tests" / "capturas"
 URL = "http://127.0.0.1:8300/"
 PLAN = [5, 2, 4, 1, 3, 5, 4]   # rareza con la que contestar en cada etapa de la misión diaria
-ESCENARIOS = ["diario", "lluvia", "maraton", "local", "reto", "online"]
+ESCENARIOS = ["diario", "universo", "lluvia", "maraton", "local", "reto", "online"]
 
 # Los modos contrarreloj duran 60-90 s: en las pruebas su reloj corre más rápido.
 RELOJ_RAPIDO = """(() => {
@@ -95,6 +95,38 @@ class Partida:
         self.p.click("[data-volver]")
         self.p.wait_for_selector(".inicio")
         self.foto("7-inicio-tras-jugar", completa=True, espera=1500)
+
+    def universo(self):
+        """Un piloto con 44 días jugados (Betelgeuse): portada, mapa y la misión de hoy, que descubre Orión."""
+        self.inicio()
+        self.p.evaluate("""() => {
+          const h = {}, hoy = new Date();
+          for (let k = 1; k <= 44; k++) {
+            const f = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate() - k);
+            const iso = `${f.getFullYear()}-${String(f.getMonth() + 1).padStart(2, "0")}-${String(f.getDate()).padStart(2, "0")}`;
+            h[`es:${iso}`] = { dia: 0, etapas: [], puntos: 280, completa: true };
+          }
+          localStorage.setItem("hp_historial", JSON.stringify(h));
+        }""")
+        self.inicio()
+        self.foto("universo-1-inicio", completa=True, espera=1200)
+        self.p.click("[data-mapa]")
+        self.p.wait_for_selector(".objeto.aqui")
+        self.foto("universo-2-mapa", espera=1200)
+        self.foto("universo-3-mapa-entero", completa=True)
+        self.p.click("[data-volver]")
+        self.p.click("[data-jugar-diario]")
+        for i in range(7):
+            self.p.wait_for_selector(".tarjeta input")
+            if i == 0:
+                self.foto("universo-4-etapa", espera=800)
+            self.contestar(elegir(self.categoria(), [5, 4, 3, 2, 3, 4, 5][i]))
+            self.p.wait_for_selector(".resultado-etapa")
+            if i == 3:
+                self.foto("universo-5-descubrimiento", espera=900)
+            self.p.click("[data-seguir]")
+        self.p.wait_for_selector(".descubrimiento")
+        self.foto("universo-6-final", completa=True, espera=2200)
 
     def lluvia(self):
         self.inicio()

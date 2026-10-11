@@ -1,4 +1,4 @@
-# Hasta Plutón — instrucciones para Claude Code
+# Lexinauta (Lexinaut en inglés) — instrucciones para Claude Code
 
 Juego web diario de palabras con temática espacial, en español e inglés. Objetivo: publicarlo en Google Play
 como PWA (Trusted Web Activity).

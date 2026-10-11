@@ -17,18 +17,27 @@ export const RUTA = [
 const TOPE = 595;
 const pos = (p) => `${(Math.min(p, TOPE) / TOPE) * 100}%`;
 
-/** `jugadores`: [{color}] — un cohete por jugador. */
-export function htmlAltimetro(jugadores) {
+/** La ruta de la misión diaria: el tramo del universo que puede recorrer hoy el cohete (desde donde se quedó ayer). */
+export function rutaDelViaje(tramo) {
+  const ruta = [{ id: tramo.inicio.id, min: 0 }, ...tramo.dentro.map((h) => ({ id: h.id, min: h.pts - tramo.desde, hito: true }))];
+  if (tramo.despues) ruta.push({ id: tramo.despues.id, min: TOPE, lejos: true });
+  // En el móvil, si hay muchos, se ocultan los intermedios alternos
+  if (ruta.length > 7) ruta.forEach((r, k) => { if (k % 2 && k < ruta.length - 1) r.menor = true; });
+  return ruta;
+}
+
+/** `jugadores`: [{color}] — un cohete por jugador. `ruta`: los objetos del camino (por defecto, el sistema solar). */
+export function htmlAltimetro(jugadores, ruta = RUTA) {
   const t = T();
   return `<div class="altimetro" aria-hidden="true">
     <div class="alt-progreso"></div>
-    ${RUTA.map((r) => `<div class="alt-planeta${r.menor ? " menor" : ""}" data-min="${r.min}" style="--pos:${pos(r.min)}">
-      ${planeta(r.id, 12)}<span>${t.destinoCorto[r.id]}</span></div>`).join("")}
+    ${ruta.map((r) => `<div class="alt-planeta${r.menor ? " menor" : ""}${r.lejos ? " lejos" : ""}" data-min="${r.lejos ? 99999 : r.min}"
+      data-id="${r.id}" style="--pos:${pos(r.min)}">${planeta(r.id, 12)}<span>${t.destinoCorto[r.id]}</span></div>`).join("")}
     ${jugadores.map((j, i) => `<div class="alt-cohete n${i}" data-j="${i}" style="--pos:0%">${cohete(j.color)}</div>`).join("")}
   </div>`;
 }
 
-/** Mueve los cohetes. Devuelve el planeta más lejano que se acaba de pasar (o null). */
+/** Mueve los cohetes. Devuelve el objeto más lejano que se acaba de pasar (o null). */
 export function moverAltimetro(raiz, puntos) {
   const alt = $(".altimetro", raiz);
   if (!alt) return null;
@@ -49,19 +58,19 @@ export function moverAltimetro(raiz, puntos) {
   $$(".alt-planeta", alt).forEach((el) => {
     const min = Number(el.dataset.min);
     el.classList.toggle("pasado", min > 0 && max >= min);
-    if (min > 0 && antes < min && max >= min) pasado = RUTA.find((r) => r.min === min).id;
+    if (min > 0 && antes < min && max >= min) pasado = el.dataset.id;
   });
   return pasado;
 }
 
 /** Sonido y aviso al cruzar un planeta. */
-export function celebrarPlaneta(id) {
+export function celebrarPlaneta(id, descubrimiento = false) {
   if (!id) return;
   const pantallaActual = $("#pantalla").firstElementChild;
   setTimeout(() => {
     if (!pantallaActual?.isConnected) return;   // ya se ha cambiado de pantalla
     sonido.planeta();
-    aviso(T().pasado(T().destinos[id]));
+    aviso(descubrimiento ? `${T().nuevoDescubrimiento} ${capital(T().destinos[id])}` : T().pasado(T().destinos[id]));
   }, 650);
 }
 

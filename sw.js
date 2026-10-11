@@ -1,12 +1,12 @@
 // Service worker: guarda la app para poder jugar sin conexión.
 // Cambia VERSION al publicar una versión nueva para que se renueve la caché.
-const VERSION = "hp-v2";
+const VERSION = "hp-v3";
 const ARCHIVOS = [
   "./", "index.html", "css/estilo.css",
   "js/app.js", "js/motor.js", "js/textos.js", "js/ui.js", "js/estado.js", "js/pixel.js", "js/fondo.js", "js/sonido.js",
   "js/red.js", "js/vendor/peerjs.min.js",
   "js/pantallas/comun.js", "js/pantallas/inicio.js", "js/pantallas/rondas.js", "js/pantallas/contrarreloj.js",
-  "js/pantallas/resultados.js", "js/pantallas/reto.js", "js/pantallas/local.js", "js/pantallas/online.js",
+  "js/pantallas/resultados.js", "js/pantallas/reto.js", "js/pantallas/local.js", "js/pantallas/online.js", "js/pantallas/universo.js",
   "datos/es.json", "datos/en.json",
   "fuentes/pixelify-sans.woff2", "fuentes/space-grotesk.woff2",
   "iconos/icono.svg", "manifest.webmanifest",

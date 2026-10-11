@@ -1,4 +1,4 @@
-# Hasta Plutón · Reach Pluto 🚀
+# Lexinauta · Lexinaut 🚀
 
 Juego diario de palabras, en español y en inglés: cada día, 7 categorías iguales para todo el mundo
 («Un queso», «Una constelación»…). Escribe algo que encaje antes de que se acabe el combustible:

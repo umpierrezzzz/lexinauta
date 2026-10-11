@@ -1,15 +1,15 @@
 // Partida clásica de un jugador por etapas: misión diaria, entrenamiento y retos de amigos.
-import { MODOS, numeroDeDia } from "../motor.js";
+import { MODOS, numeroDeDia, tramoViaje } from "../motor.js";
 import { $, T, ruta, ir, pantalla, COLORES_JUGADOR } from "../ui.js";
-import { estado, guardarPartidaDiaria, partidaDeHoy } from "../estado.js";
+import { estado, guardarPartidaDiaria, partidaDeHoy, puntosViaje, hoyISO } from "../estado.js";
 import { sonido } from "../sonido.js";
-import { htmlAltimetro, moverAltimetro, celebrarPlaneta, jugarEtapa, celebrar, htmlResultadoEtapa, esperarSeguir,
+import { htmlAltimetro, rutaDelViaje, moverAltimetro, celebrarPlaneta, jugarEtapa, celebrar, htmlResultadoEtapa, esperarSeguir,
   htmlEtapas, pintarEtapas } from "./comun.js";
 
-export function htmlJuego({ jugadores, rondas }) {
+export function htmlJuego({ jugadores, rondas, ruta }) {
   const t = T();
   return `<div class="juego-rejilla">
-    <aside>${htmlAltimetro(jugadores)}</aside>
+    <aside>${htmlAltimetro(jugadores, ruta)}</aside>
     <section class="juego">
       <div class="hud">
         <div class="hud-izq">
@@ -39,7 +39,10 @@ ruta("rondas", ({ modo, categorias, rival = null }) => {
   const idioma = estado.idioma;
   const datos = estado.datos[idioma];
   const { rondas, segundos } = MODOS[modo];
-  const raiz = pantalla(htmlJuego({ jugadores: [{ color: COLORES_JUGADOR[0] }], rondas }), "partida");
+  // En la misión diaria, el altímetro es el tramo del universo que puede recorrer hoy el cohete
+  const diario = modo === "diario";
+  const ruta = diario ? rutaDelViaje(tramoViaje(puntosViaje(hoyISO()))) : undefined;
+  const raiz = pantalla(htmlJuego({ jugadores: [{ color: COLORES_JUGADOR[0] }], rondas, ruta }), "partida");
   const zona = $("[data-zona]", raiz), marcador = $("[data-marcador]", raiz), rotulo = $("[data-etapa]", raiz);
   let cancelado = false;
   activarAbandonar(raiz);
@@ -76,7 +79,7 @@ ruta("rondas", ({ modo, categorias, rival = null }) => {
       pintarEtapas(raiz, i + 1, etapas.map((e) => e.rareza));
       marcador.textContent = puntos;
       if (res.puntos) { marcador.classList.remove("sube"); void marcador.offsetWidth; marcador.classList.add("sube"); }
-      celebrarPlaneta(moverAltimetro(raiz, [puntos]));
+      celebrarPlaneta(moverAltimetro(raiz, [puntos]), diario);
       await esperarSeguir(zona);
       if (cancelado) return;
     }
