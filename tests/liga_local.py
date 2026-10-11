@@ -34,6 +34,14 @@ do $$ begin
 end $$;
 grant anon, authenticated to authenticator;
 grant usage on schema public to anon, authenticated;
+
+-- Lo mínimo de Supabase Auth: usuarios y auth.uid() (el «sub» del JWT de la sesión)
+create schema if not exists auth;
+create table if not exists auth.users (id uuid primary key, email text);
+create or replace function auth.uid() returns uuid language sql stable as $$
+  select nullif(current_setting('request.jwt.claims', true)::json->>'sub', '')::uuid
+$$;
+grant usage on schema auth to anon, authenticated;
 """
 
 
@@ -43,8 +51,17 @@ def _b64(datos: bytes) -> str:
 
 def clave_anon() -> str:
     """Un JWT HS256 con role=anon, como la «anon key» de Supabase."""
+    return jwt({"role": "anon", "iss": "lexinauta-pruebas"})
+
+
+def token_usuario(usuario: str) -> str:
+    """El token de sesión de un usuario que ha iniciado sesión (role=authenticated, sub=su id)."""
+    return jwt({"role": "authenticated", "sub": usuario, "exp": 4102444800})
+
+
+def jwt(datos: dict) -> str:
     cab = _b64(json.dumps({"alg": "HS256", "typ": "JWT"}).encode())
-    cuerpo = _b64(json.dumps({"role": "anon", "iss": "lexinauta-pruebas"}).encode())
+    cuerpo = _b64(json.dumps(datos).encode())
     firma = hmac.new(JWT_SECRETO.encode(), f"{cab}.{cuerpo}".encode(), hashlib.sha256).digest()
     return f"{cab}.{cuerpo}.{_b64(firma)}"
 
@@ -76,6 +93,7 @@ def arrancar():
             time.sleep(0.5)
     sql(ROLES)
     sql((RAIZ / "servidor" / "liga.sql").read_text(encoding="utf-8"))
+    sql((RAIZ / "servidor" / "progreso.sql").read_text(encoding="utf-8"))
     docker("run", "-d", "--name", REST, "--network", RED, "-p", f"127.0.0.1:{PUERTO_REST}:3000",
            "-e", f"PGRST_DB_URI=postgresql://authenticator:pruebas@{PG}:5432/postgres",
            "-e", "PGRST_DB_SCHEMAS=public", "-e", "PGRST_DB_ANON_ROLE=anon",

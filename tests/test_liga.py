@@ -13,6 +13,24 @@ import psycopg  # noqa: E402
 fallos: list[str] = []
 
 
+def api(metodo, ruta, usuario, cuerpo=None, cabeceras=None):
+    """Llama a la API REST como un usuario con sesión (o como anónimo si usuario es None)."""
+    import json
+    import urllib.error
+    import urllib.request
+    token = liga_local.token_usuario(usuario) if usuario else liga_local.clave_anon()
+    peticion = urllib.request.Request(f"{liga_local.URL_REST}/{ruta}", method=metodo,
+                                      data=json.dumps(cuerpo).encode() if cuerpo is not None else None,
+                                      headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json",
+                                               **(cabeceras or {})})
+    try:
+        with urllib.request.urlopen(peticion) as r:
+            texto = r.read().decode()
+            return r.status, json.loads(texto) if texto else None
+    except urllib.error.HTTPError as e:
+        return e.code, None
+
+
 def ok(cond, msg):
     if not cond:
         fallos.append(msg)
@@ -104,6 +122,24 @@ def main():
             ok(tam == [30, 30, 5], f"grupos de hasta 30: {tam}")
             ok(q("select liga_tamano_zona(1, true), liga_tamano_zona(4, false), liga_tamano_zona(30, false)")[0] == (1, 0, 5),
                "tamaño de las zonas")
+
+            # ---------------------------------------------------------- progreso en la nube (por la API, como el juego)
+            ana, leo = str(uuid.uuid4()), str(uuid.uuid4())
+            for u in (ana, leo):
+                q("insert into auth.users values (%s, %s)", (u, f"{u[:4]}@x.es"))
+            ok(api("POST", "progreso", ana, {"usuario": ana, "datos": {"hp_nombre": "Ana"}})[0] == 201, "guardar el progreso propio")
+            st, filas = api("GET", f"progreso?select=datos&usuario=eq.{ana}", ana)
+            ok(st == 200 and filas[0]["datos"]["hp_nombre"] == "Ana", "leer el progreso propio")
+            st, filas = api("GET", "progreso?select=usuario", leo)
+            ok(st == 200 and filas == [], "no se ve el progreso de otros")
+            ok(api("POST", "progreso", leo, {"usuario": ana, "datos": {"hp_nombre": "pirata"}})[0] >= 400, "no se escribe en el de otro")
+            api("PATCH", f"progreso?usuario=eq.{ana}", leo, {"datos": {"hp_nombre": "pirata"}})
+            ok(q("select datos->>'hp_nombre' from progreso where usuario = %s", (ana,))[0][0] == "Ana", "no se modifica el de otro")
+            st, _ = api("POST", "progreso", ana, {"usuario": ana, "datos": {"hp_nombre": "Ana 2"}},
+                        {"Prefer": "resolution=merge-duplicates,return=minimal"})
+            ok(st in (200, 201, 204) and q("select datos->>'hp_nombre' from progreso where usuario = %s", (ana,))[0][0] == "Ana 2",
+               "actualizar (upsert) el propio")
+            ok(api("GET", "progreso?select=usuario", None)[0] >= 400, "sin sesión no se lee nada")
     finally:
         liga_local.parar()
 

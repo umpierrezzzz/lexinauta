@@ -9,6 +9,7 @@ import { htmlProgresoViaje, animarProgreso, htmlRacha } from "./universo.js";
 import { cohetesNuevos, htmlCoheteNuevo, activarEstrenar } from "./hangar.js";
 import { aliasLiga, SPRITE_DIVISION } from "./liga.js";
 import { ligaActiva, enviarPartida } from "../liga.js";
+import { guardarEnLaNube } from "../cuenta.js";
 
 const CUADROS = ["⬛", "🟦", "🟩", "🟨", "🟧", "🟥"];
 
@@ -112,6 +113,7 @@ ruta("resultados", (o) => {
   </section>`, "final-pantalla");
 
   contar($("[data-total]", raiz), o.puntos);
+  if (o.nuevo) guardarEnLaNube();
   // La misión diaria cuenta para la liga semanal
   const hueco = $("[data-liga-resultado]", raiz);
   if (hueco && o.nuevo) {

@@ -79,6 +79,22 @@ async () => {
   rc = m.calcularRacha(dias(1, 30), "2026-10-30");
   ok(rc.escudos === 2 && rc.mejor === 30, "máximo dos escudos");
   ok(m.calcularRacha([], "2026-10-10").racha === 0, "sin partidas");
+
+  // Mezcla del progreso del navegador con el de la cuenta
+  const cu = await import("/js/cuenta.js");
+  const mz = cu.mezclarProgreso(
+    { hp_historial: { "es:2026-10-10": { puntos: 300, completa: true }, "es:2026-10-11": { puntos: 100, completa: false } },
+      hp_records: { "es:lluvia": 400 }, hp_cohete: "clasico", hp_liga_secreto: "local", hp_cohetes_vistos: ["clasico"] },
+    { hp_historial: { "es:2026-10-09": { puntos: 250, completa: true }, "es:2026-10-11": { puntos: 280, completa: true } },
+      hp_records: { "es:lluvia": 300, "es:maraton": 500 }, hp_cohete: "retro", hp_liga_secreto: "nube", hp_nombre: "Dani",
+      hp_cohetes_vistos: ["retro"] });
+  ok(Object.keys(mz.hp_historial).length === 3, "mezcla: une los días");
+  ok(mz.hp_historial["es:2026-10-11"].completa && mz.hp_historial["es:2026-10-11"].puntos === 280, "mezcla: gana la partida terminada");
+  ok(mz.hp_records["es:lluvia"] === 400 && mz.hp_records["es:maraton"] === 500, "mezcla: récords máximos");
+  ok(mz.hp_liga_secreto === "nube" && mz.hp_nombre === "Dani" && mz.hp_cohete === "retro", "mezcla: identidad de la cuenta");
+  ok(mz.hp_cohetes_vistos.length === 2, "mezcla: cohetes vistos");
+  const mz2 = cu.mezclarProgreso({ hp_liga_secreto: "local", hp_cohete: "saturno" }, {});
+  ok(mz2.hp_liga_secreto === "local" && mz2.hp_cohete === "saturno", "mezcla: cuenta vacía conserva lo local");
   ok(m.distancia("taleggio", "tallegio") === 2 || m.distancia("taleggio", "tallegio") <= 2, "distancia de edición");
 
   // Categorías por semilla: reproducibles y sin repetir

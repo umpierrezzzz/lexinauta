@@ -122,6 +122,14 @@ export const TEXTOS = {
     maxJugadores: "Máximo 6 pilotos",
     avisoOnline: "Prototipo: la conexión inicial usa el servidor público de PeerJS.",
 
+    // Cuenta
+    entrarGoogle: "Guardar con Google",
+    guardadoNube: "Progreso guardado en la nube",
+    cerrarSesion: "Cerrar sesión",
+    bienvenida: (n) => `¡Hola, ${n}! Tu progreso está a salvo.`,
+    errorSesion: "No se ha podido iniciar sesión. Inténtalo otra vez.",
+    seguroSalir: "¿Cerrar sesión? Tu progreso sigue guardado en la cuenta y en este dispositivo.",
+
     // Liga
     liga: "Liga",
     ligaSemanal: "Liga semanal",
@@ -354,6 +362,13 @@ export const TEXTOS = {
     salir: "Leave",
     maxJugadores: "Up to 6 pilots",
     avisoOnline: "Prototype: the initial connection uses the public PeerJS server.",
+
+    entrarGoogle: "Save with Google",
+    guardadoNube: "Progress saved in the cloud",
+    cerrarSesion: "Sign out",
+    bienvenida: (n) => `Hi, ${n}! Your progress is safe.`,
+    errorSesion: "Couldn't sign in. Please try again.",
+    seguroSalir: "Sign out? Your progress stays saved in your account and on this device.",
 
     liga: "League",
     ligaSemanal: "Weekly league",

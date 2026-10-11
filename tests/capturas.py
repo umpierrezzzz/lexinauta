@@ -3,7 +3,7 @@
 Uso (con el servidor en marcha: python -m http.server 8300):
     .venv-dev\\Scripts\\python tests\\capturas.py [es|en] [movil|escritorio] [escenario...]
 
-Escenarios: diario, universo, lluvia, maraton, local, reto, online, liga (por defecto, todos).
+Escenarios: diario, universo, lluvia, maraton, local, reto, online, liga, cuenta (por defecto, todos).
 "liga" levanta una réplica local de Supabase en Docker (tests/liga_local.py).
 "online" abre dos navegadores (anfitrión e invitado) y necesita internet para el servidor de PeerJS.
 Las capturas quedan en tests/capturas/. Falla si la página tiene errores de JavaScript.
@@ -18,7 +18,7 @@ RAIZ = Path(__file__).resolve().parent.parent
 SALIDA = RAIZ / "tests" / "capturas"
 URL = "http://127.0.0.1:8300/"
 PLAN = [5, 2, 4, 1, 3, 5, 4]   # rareza con la que contestar en cada etapa de la misión diaria
-ESCENARIOS = ["diario", "universo", "lluvia", "maraton", "local", "reto", "online", "liga"]
+ESCENARIOS = ["diario", "universo", "lluvia", "maraton", "local", "reto", "online", "liga", "cuenta"]
 
 # Los modos contrarreloj duran 60-90 s: en las pruebas su reloj corre más rápido.
 RELOJ_RAPIDO = """(() => {
@@ -331,6 +331,68 @@ def liga(nuevo_contexto, idioma, pref, errores):
         liga_local.parar()
 
 
+def cuenta(nuevo_contexto, idioma, pref, errores):
+    """Dos dispositivos con la misma cuenta: el primero sube su progreso y el segundo lo recupera."""
+    sys.path.insert(0, str(Path(__file__).parent))
+    import uuid
+    import liga_local
+    import psycopg
+    liga_local.arrancar()
+    try:
+        usuario = str(uuid.uuid4())
+        with psycopg.connect(liga_local.DSN, autocommit=True) as c:
+            c.execute("insert into auth.users values (%s, 'piloto@ejemplo.es')", (usuario,))
+        sesion = {"acceso": liga_local.token_usuario(usuario), "renovar": "x", "caduca": 4102444800000,
+                  "id": usuario, "correo": "piloto@ejemplo.es", "nombre": "Piloto"}
+
+        def dispositivo(nombre, con_sesion, historial=None):
+            ctx = nuevo_contexto()
+            ctx.add_init_script("window.LEXINAUTA_LIGA = { url: 'http://liga.test', clave: '%s' };" % liga_local.clave_anon())
+            if con_sesion:
+                ctx.add_init_script("localStorage.setItem('hp_sesion', JSON.stringify(%s));" % json.dumps(sesion))
+            if historial:
+                ctx.add_init_script("if (!localStorage.getItem('hp_historial')) localStorage.setItem('hp_historial', %s);"
+                                    % json.dumps(json.dumps(historial)))
+
+            def reenviar(ruta):
+                r = ruta.fetch(url=ruta.request.url.replace("http://liga.test/rest/v1", liga_local.URL_REST))
+                ruta.fulfill(response=r, headers={**r.headers, "access-control-allow-origin": "*"})
+            ctx.route("http://liga.test/**", reenviar)
+            pg = ctx.new_page()
+            pg.on("pageerror", lambda e: errores.append(f"cuenta/{nombre} pageerror: {e}"))
+            pg.on("console", lambda m: errores.append(f"cuenta/{nombre} console.{m.type}: {m.text}")
+                  if m.type == "error" else None)
+            return Partida(pg, idioma, f"{pref}-cuenta-{nombre}")
+
+        # Móvil: sin sesión, con 10 días jugados → botón de Google
+        hist = {f"{idioma}:2026-09-{d:02d}": {"dia": 0, "etapas": [], "puntos": 300, "completa": True} for d in range(20, 30)}
+        movil = dispositivo("movil", False, hist)
+        movil.inicio()
+        movil.p.wait_for_selector("[data-google]")
+        movil.foto("1-sin-sesion", espera=900)
+        movil.p.context.close()
+        # El mismo móvil, ya con sesión: sube su progreso
+        movil = dispositivo("movil", True, hist)
+        movil.inicio()
+        movil.p.wait_for_selector(".cuenta-estado")
+        movil.p.wait_for_timeout(2500)
+        movil.foto("2-con-sesion", espera=100)
+        with psycopg.connect(liga_local.DSN) as c:
+            n = c.execute("select count(*) from jsonb_object_keys((select datos->'hp_historial' from progreso where usuario = %s))",
+                          (usuario,)).fetchone()[0]
+        if n != 10:
+            errores.append(f"cuenta: en la nube hay {n} días, se esperaban 10")
+        movil.p.context.close()
+        # Portátil nuevo, misma cuenta: recupera los 10 días
+        portatil = dispositivo("portatil", True)
+        portatil.inicio()
+        portatil.p.wait_for_function("document.querySelector('.estadistica b')?.textContent === '10'", timeout=15000)
+        portatil.foto("3-recuperado", completa=True, espera=900)
+        portatil.p.context.close()
+    finally:
+        liga_local.parar()
+
+
 def jugar(idioma: str, dispositivo: str, escenarios: list[str]) -> list[str]:
     SALIDA.mkdir(parents=True, exist_ok=True)
     errores: list[str] = []
@@ -357,8 +419,8 @@ def jugar(idioma: str, dispositivo: str, escenarios: list[str]) -> list[str]:
                             pg.screenshot(path=SALIDA / f"{idioma}-{dispositivo}-online-FALLO-{k}.png")
                     errores.append(f"online: {str(e).splitlines()[0]}")
                 continue
-            if esc == "liga":
-                liga(nuevo_contexto, idioma, f"{idioma}-{dispositivo}", errores)
+            if esc in ("liga", "cuenta"):
+                {"liga": liga, "cuenta": cuenta}[esc](nuevo_contexto, idioma, f"{idioma}-{dispositivo}", errores)
                 continue
             ctx = nuevo_contexto(ayuda_vista=esc != "diario")
             pagina = ctx.new_page()

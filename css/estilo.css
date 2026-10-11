@@ -460,6 +460,13 @@ h2.seccion::after { content: ""; flex: 1; height: 2px; background: repeating-lin
 .clasificacion .zona.sube { color: var(--verde); }
 .clasificacion .zona.baja { color: var(--rojo); }
 
+/* Cuenta */
+.btn.blanco { --c-fondo: #f2f4ff; --c-tinta: #1b1530; justify-self: start; }
+.cuenta { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; }
+.cuenta-estado { color: var(--verde); font: 700 .85rem var(--pixel); }
+.cuenta-estado small { display: block; color: var(--tenue); font: 400 .75rem var(--texto); }
+.enlace { color: var(--tenue); font: 400 .8rem var(--texto); text-decoration: underline; }
+
 /* ==========================================================================
    Sprites en pantallas anchas
    ========================================================================== */
